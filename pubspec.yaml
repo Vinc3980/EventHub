@@ -1,0 +1,66 @@
+name: eventhub
+description: "EventHub — event booking and social platform for weddings, funerals, corporate, and social events."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  # Local-first storage. Firebase is staged for later (see README):
+  # firebase_core, firebase_auth, cloud_firestore, firebase_storage,
+  # cloud_functions, firebase_messaging get added back when we go live.
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  provider: ^6.1.2
+  google_maps_flutter: ^2.10.0
+  qr_flutter: ^4.1.0
+  intl: ^0.20.1
+  image_picker: ^1.1.2
+  url_launcher: ^6.3.1
+  mobile_scanner: ^5.2.3
+  csv: ^6.0.0
+  share_plus: ^10.1.4
+  path_provider: ^2.1.5
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.10.1
+  # Splash screen placeholder — swap for real brand assets before submission.
+  # Run `dart run flutter_native_splash:create` after changing config below.
+  flutter_native_splash: ^2.4.3
+  shimmer: ^3.0.0
+  flutter_animate: ^4.5.2
+  animations: ^2.0.14
+  cached_network_image: ^3.4.1
+  iconsax_plus: ^1.0.0
+  google_fonts: ^6.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - google_fonts/
+
+# Splash screen configuration.
+# TODO: Replace the color-only placeholder with a real logo image before
+# store submission.  Place the logo asset at assets/images/splash_logo.png
+# and update the `image` field below.
+flutter_native_splash:
+  color: "#FAFAFA"
+  # image: assets/images/splash_logo.png  # uncomment when real logo exists
+  color_dark: "#FAFAFA"
+  # image_dark: assets/images/splash_logo.png
+  android_12:
+    color: "#FAFAFA"
+    # image: assets/images/splash_logo.png
+  ios: true
+  android: true
+  fullscreen: true

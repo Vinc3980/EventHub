@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" role="img" aria-label="EventHub avatar 2">
+  <defs>
+    <linearGradient id="avatarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2B5FFF"/>
+      <stop offset="100%" stop-color="#8E3FBF"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="100" ry="100" fill="url(#avatarGrad)"/>
+  <circle cx="100" cy="100" r="74" fill="#FFFFFF" fill-opacity="0.16"/>
+  <circle cx="100" cy="100" r="92" fill="none" stroke="#FFFFFF" stroke-opacity="0.40" stroke-width="4"/>
+  <text x="100" y="124" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="66" font-weight="700" fill="#FFFFFF">EH</text>
+</svg>

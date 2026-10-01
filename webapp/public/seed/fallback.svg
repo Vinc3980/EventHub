@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500" role="img" aria-label="EVENTHUB cover">
+  <defs>
+    <linearGradient id="coverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F3F4F6"/>
+      <stop offset="100%" stop-color="#9CA3AF"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#coverGrad)"/>
+  <circle cx="662" cy="88" r="176" fill="#FFFFFF" fill-opacity="0.10"/>
+  <circle cx="120" cy="432" r="152" fill="#FFFFFF" fill-opacity="0.08"/>
+  <g fill="#FFFFFF" fill-opacity="0.55">
+      <circle cx="110" cy="110" r="40"/>
+      <circle cx="700" cy="400" r="52"/>
+      <rect x="640" y="72" width="96" height="16"/>
+      <rect x="64" y="412" width="120" height="16"/>
+    </g>
+  <circle cx="400" cy="214" r="78" fill="#FFFFFF" fill-opacity="0.92"/>
+    <text x="400" y="232.9" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="700" fill="#2B5FFF">EH</text>
+  <text x="400" y="362" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="600" letter-spacing="8" fill="#111827">EVENTHUB</text>
+</svg>

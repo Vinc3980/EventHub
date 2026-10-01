@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500" role="img" aria-label="SOCIAL cover">
+  <defs>
+    <linearGradient id="coverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2B5FFF"/>
+      <stop offset="100%" stop-color="#A044C4"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#coverGrad)"/>
+  <circle cx="662" cy="88" r="176" fill="#FFFFFF" fill-opacity="0.10"/>
+  <circle cx="120" cy="432" r="152" fill="#FFFFFF" fill-opacity="0.08"/>
+  <g fill="#FFFFFF">
+      <circle cx="92" cy="104" r="14" fill-opacity="0.55"/>
+      <circle cx="164" cy="66" r="9" fill-opacity="0.45"/>
+      <circle cx="712" cy="118" r="12" fill-opacity="0.50"/>
+      <circle cx="644" cy="70" r="8" fill-opacity="0.40"/>
+      <circle cx="88" cy="404" r="10" fill-opacity="0.45"/>
+      <circle cx="740" cy="392" r="15" fill-opacity="0.50"/>
+      <rect x="140" y="392" width="22" height="22" fill-opacity="0.35" transform="rotate(18 151 403)"/>
+      <rect x="676" y="356" width="26" height="26" fill-opacity="0.35" transform="rotate(-14 689 369)"/>
+    </g>
+  <circle cx="400" cy="214" r="78" fill="#FFFFFF" fill-opacity="0.92"/>
+    <text x="400" y="232.9" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="700" fill="#2B5FFF">EH</text>
+  <text x="400" y="362" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="600" letter-spacing="8" fill="#FFFFFF">SOCIAL</text>
+    <text x="400" y="404" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="600" letter-spacing="5" fill="#FFFFFF">EVENTHUB</text>
+</svg>

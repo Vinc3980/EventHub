@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EventHub</title>
+    <script>
+      // GitHub Pages serves this file for any path that doesn't exist on disk
+      // (client-side routes like /EventHub/explore, and stale asset URLs).
+      // Redirect back to index.html with the requested URL encoded in ?redirect=
+      // so the single-page app can take over. The decode snippet lives in
+      // index.html. The '/EventHub' prefix matches the Vite base used in CI.
+      (function () {
+        var l = window.location;
+        l.replace(
+          l.origin +
+            '/EventHub/?redirect=' +
+            encodeURIComponent(l.pathname + l.search + l.hash),
+        );
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>

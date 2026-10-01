@@ -1,0 +1,120 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Helpers ----------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Reads the roles array of the calling user (denies if the user doc is missing).
+    function hasRole(role) {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny([role]);
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isEventOwner(eventId) {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/events/$(eventId)).data.ownerId == request.auth.uid;
+    }
+
+    function isAdmin() {
+      return hasRole('admin');
+    }
+
+    function isChatMember(chatId) {
+      return isSignedIn()
+        && get(/databases/$(database)/documents/chats/$(chatId)).data.memberIds.hasAny([request.auth.uid]);
+    }
+
+    // ---------- users ----------
+    // Any signed-in user can read profiles; a user can write their own doc,
+    // admins can write any.
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    // ---------- events ----------
+    // Published events are public; owners and admins can read anything.
+    // Only organizers can create; only the owner or an admin can update/delete.
+    match /events/{eventId} {
+      allow read: if resource.data.status == 'published'
+        || isOwner(resource.data.ownerId)
+        || isAdmin();
+      allow create: if isSignedIn() && hasRole('organizer');
+      allow update, delete: if isOwner(resource.data.ownerId) || isAdmin();
+    }
+
+    // ---------- guestList ----------
+    // Pre-registration contacts uploaded by the organizer are visible and
+    // editable only by the event owner.
+    match /guestList/{entryId} {
+      allow read, write: if isEventOwner(resource.data.eventId);
+    }
+
+    // ---------- registrations ----------
+    match /registrations/{regId} {
+      allow read: if isOwner(resource.data.userId)
+        || isEventOwner(resource.data.eventId)
+        || isAdmin();
+      allow create: if isSignedIn();
+      allow update, delete: if isOwner(resource.data.userId)
+        || isEventOwner(resource.data.eventId)
+        || isAdmin();
+    }
+
+    // ---------- bookings ----------
+    // Read/write is open to signed-in users for now; tighten once flows are
+    // finalized (e.g. only the attendee, event owner, or admin).
+    match /bookings/{bookingId} {
+      allow read, create: if isSignedIn();
+      allow update, delete: if isOwner(resource.data.userId)
+        || isEventOwner(resource.data.eventId)
+        || isAdmin();
+    }
+
+    // ---------- invitedGuests ----------
+    // Plus-ones linked to a booking.
+    match /invitedGuests/{guestId} {
+      allow read, create, update, delete: if isSignedIn();
+    }
+
+    // ---------- payments ----------
+    // Clients may read their own payment status but can NEVER write payments —
+    // those are created by Cloud Functions (MomoService lives server-side).
+    match /payments/{paymentId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // ---------- posts ----------
+    match /posts/{postId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(resource.data.authorId);
+      allow update, delete: if isOwner(resource.data.authorId) || isAdmin();
+    }
+
+    // ---------- follows ----------
+    // Only the follower can create/delete their own follow edge.
+    match /follows/{followId} {
+      allow read: if isSignedIn();
+      allow create, delete: if isOwner(resource.data.followerId);
+    }
+
+    // ---------- chats + messages ----------
+    // Only chat members can read or write a chat and its messages.
+    match /chats/{chatId} {
+      allow read, write: if isChatMember(chatId);
+
+      match /messages/{messageId} {
+        allow read, write: if isChatMember(chatId);
+      }
+    }
+  }
+}

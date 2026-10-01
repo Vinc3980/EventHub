@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#2B5FFF" />
+    <meta name="description" content="EventHub — event booking and social platform for weddings, funerals, corporate and social events in Ghana." />
+    <meta property="og:title" content="EventHub" />
+    <meta property="og:description" content="Book weddings, funerals, corporate and social events across Ghana." />
+    <meta property="og:type" content="website" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <title>EventHub</title>
+    <script>
+      // GitHub Pages has no SPA fallback: public/404.html bounces deep links
+      // back to index.html with the intended URL in ?redirect= (see that file).
+      // Restore it before the router boots. No-op at the domain root and in dev.
+      (function () {
+        var redirect = new URLSearchParams(window.location.search).get('redirect');
+        if (redirect && redirect.charAt(0) === '/' && redirect.charAt(1) !== '/') {
+          window.history.replaceState(null, '', redirect);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

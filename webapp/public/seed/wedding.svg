@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500" role="img" aria-label="WEDDING cover">
+  <defs>
+    <linearGradient id="coverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2B5FFF"/>
+      <stop offset="100%" stop-color="#A044C4"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#coverGrad)"/>
+  <circle cx="662" cy="88" r="176" fill="#FFFFFF" fill-opacity="0.10"/>
+  <circle cx="120" cy="432" r="152" fill="#FFFFFF" fill-opacity="0.08"/>
+  <g fill="none" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="6">
+      <circle cx="112" cy="92" r="44"/>
+      <circle cx="168" cy="92" r="44"/>
+      <circle cx="636" cy="416" r="50"/>
+      <circle cx="694" cy="416" r="50"/>
+    </g>
+  <circle cx="400" cy="214" r="78" fill="#FFFFFF" fill-opacity="0.92"/>
+    <text x="400" y="232.9" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="700" fill="#2B5FFF">EH</text>
+  <text x="400" y="362" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="600" letter-spacing="8" fill="#FFFFFF">WEDDING</text>
+    <text x="400" y="404" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="600" letter-spacing="5" fill="#FFFFFF">EVENTHUB</text>
+</svg>

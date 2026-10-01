@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="EventHub">
+  <defs>
+    <linearGradient id="eh" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2B5FFF"/>
+      <stop offset="100%" stop-color="#9F44C4"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="42" fill="url(#eh)"/>
+  <g fill="#FFFFFF">
+    <rect x="44" y="56" width="13" height="80" rx="6.5"/>
+    <rect x="44" y="56" width="52" height="13" rx="6.5"/>
+    <rect x="44" y="89.5" width="42" height="13" rx="6.5"/>
+    <rect x="44" y="123" width="52" height="13" rx="6.5"/>
+    <rect x="106" y="56" width="13" height="80" rx="6.5"/>
+    <rect x="147" y="56" width="13" height="80" rx="6.5"/>
+    <rect x="106" y="89.5" width="54" height="13" rx="6.5"/>
+  </g>
+</svg>
