@@ -174,6 +174,8 @@ export const TYPOGRAPHY = {
 export const SHADOW = {
   /** cobalt-tinted card shadow for light backgrounds */
   card: '0 4px 16px rgba(43, 95, 255, 0.07)',
+  /** deeper cobalt shadow for floating menus, dropdowns and the drawer */
+  popover: '0 12px 32px rgba(43, 95, 255, 0.14)',
   /** dark-surface shadow for the Explore backdrop */
   dark: '0 6px 20px rgba(0, 0, 0, 0.20)',
 } as const;

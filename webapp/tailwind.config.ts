@@ -49,6 +49,7 @@ const config: Config = {
       },
       boxShadow: {
         card: SHADOW.card,
+        popover: SHADOW.popover,
         dark: SHADOW.dark,
       },
       backgroundImage: {
@@ -67,14 +68,20 @@ const config: Config = {
           '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        panelin: {
+          '0%': { opacity: '0', transform: 'translateY(6px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
       },
       animation: {
         shimmer: 'shimmer 1.4s ease-in-out infinite',
         fadeup: 'fadeup 250ms ease-out both',
+        panelin: 'panelin 150ms ease-out both',
       },
       screens: {
         tablet: '768px',
         desktop: '1024px',
+        wide: '1280px',
       },
     },
   },
