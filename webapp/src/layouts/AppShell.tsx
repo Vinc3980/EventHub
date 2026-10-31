@@ -9,10 +9,12 @@
  *  - `bare`    — full-height tool (chat thread, QR scanner): slim back header.
  */
 import { Suspense, useCallback, useState } from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'iconsax-react';
 import { useAuth } from '../app/AuthProvider';
 import { OfflineBanner, Skeleton } from '../components/ui';
+import { EventPickerSheet } from '../components/EventPickerSheet';
+import { EventToolProvider } from '../components/EventToolContext';
 import { useOnline } from '../hooks/useBreakpoint';
 import { layoutFor, routeMeta } from '../routes/routeMeta';
 import { Footer } from './Footer';
@@ -51,17 +53,16 @@ export function AppShell() {
   const { uid } = useAuth();
   const online = useOnline();
   const location = useLocation();
-  const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [toolTemplate, setToolTemplate] = useState<string | null>(null);
   const layout = layoutFor(location.pathname);
   const meta = routeMeta(location.pathname);
 
   // Event-scoped nav entries hand over a `/organizer/events/:id/<tool>`
-  // template. Until an event is picked the user lands on the event list,
-  // where they pick the event first (the picker sheet is wired in step 6).
-  const onEventTool = useCallback(() => {
-    navigate('/organizer/events');
-  }, [navigate]);
+  // template — the picker sheet asks which event, then navigates.
+  const onEventTool = useCallback((template: string) => {
+    setToolTemplate(template);
+  }, []);
 
   // ---- focused / bare: slim back header, no footer, no bottom tabs -------
   if (layout !== 'default') {
@@ -97,27 +98,30 @@ export function AppShell() {
 
   // ---- default: top nav + page header + footer + bottom tabs -------------
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <TopNav onEventTool={onEventTool} />
-      <CompactTopBar onOpenMenu={() => setDrawerOpen(true)} />
-      {!online && <OfflineBanner />}
+    <EventToolProvider value={{ openEventTool: onEventTool }}>
+      <div className="flex min-h-screen flex-col bg-background">
+        <TopNav onEventTool={onEventTool} />
+        <CompactTopBar onOpenMenu={() => setDrawerOpen(true)} />
+        {!online && <OfflineBanner />}
 
-      <main className="min-w-0 flex-1 px-4 pb-24 pt-4 tablet:px-6 tablet:pb-10 wide:px-8">
-        <div className="mx-auto w-full max-w-[1280px] min-w-0">
-          <PageHeader />
-          <Suspense fallback={FALLBACK}>
-            <Outlet />
-          </Suspense>
-        </div>
-      </main>
+        <main className="min-w-0 flex-1 px-4 pb-24 pt-4 tablet:px-6 tablet:pb-10 wide:px-8">
+          <div className="mx-auto w-full max-w-[1280px] min-w-0">
+            <PageHeader />
+            <Suspense fallback={FALLBACK}>
+              <Outlet />
+            </Suspense>
+          </div>
+        </main>
 
-      <Footer uid={uid} />
-      <BottomTabs onOpenMenu={() => setDrawerOpen(true)} />
-      <NavDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        onEventTool={onEventTool}
-      />
-    </div>
+        <Footer uid={uid} />
+        <BottomTabs onOpenMenu={() => setDrawerOpen(true)} />
+        <NavDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          onEventTool={onEventTool}
+        />
+        <EventPickerSheet template={toolTemplate} onClose={() => setToolTemplate(null)} />
+      </div>
+    </EventToolProvider>
   );
 }

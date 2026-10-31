@@ -29,11 +29,27 @@ const ProfileScreen = lazy(withChunkRetry(() => import('./screens/shared/Profile
 const UserProfileScreen = lazy(withChunkRetry(() => import('./screens/shared/UserProfileScreen')));
 const FollowListScreen = lazy(withChunkRetry(() => import('./screens/shared/FollowListScreen')));
 const NotificationsScreen = lazy(withChunkRetry(() => import('./screens/shared/NotificationsScreen')));
-const SettingsScreen = lazy(withChunkRetry(() => import('./screens/shared/SettingsScreen')));
 const BlockedAccountsScreen = lazy(withChunkRetry(() => import('./screens/shared/BlockedAccountsScreen')));
 const PaymentMethodsScreen = lazy(withChunkRetry(() => import('./screens/shared/PaymentMethodsScreen')));
 
-const OrganizerDashboard = lazy(withChunkRetry(() => import('./screens/organizer/OrganizerDashboard')));
+// Hub pages (section 3.6) — categorical landings for each module.
+const HostHub = lazy(withChunkRetry(() => import('./screens/hubs/HostHub')));
+const TicketsHub = lazy(withChunkRetry(() => import('./screens/hubs/TicketsHub')));
+const CommunityHub = lazy(withChunkRetry(() => import('./screens/hubs/CommunityHub')));
+const AccountHub = lazy(withChunkRetry(() => import('./screens/hubs/AccountHub')));
+const AdminHub = lazy(withChunkRetry(() => import('./screens/hubs/AdminHub')));
+const HelpHub = lazy(withChunkRetry(() => import('./screens/hubs/HelpHub')));
+const HelpArticleScreen = lazy(withChunkRetry(() => import('./screens/hubs/HelpArticleScreen')));
+const AccountSettingsScreen = lazy(
+  withChunkRetry(() => import('./screens/shared/AccountSettingsScreen')),
+);
+const SecuritySettingsScreen = lazy(
+  withChunkRetry(() => import('./screens/shared/SecuritySettingsScreen')),
+);
+const NotificationSettingsScreen = lazy(
+  withChunkRetry(() => import('./screens/shared/NotificationSettingsScreen')),
+);
+
 const MyEventsScreen = lazy(withChunkRetry(() => import('./screens/organizer/MyEventsScreen')));
 const CreateEventScreen = lazy(withChunkRetry(() => import('./screens/organizer/CreateEventScreen')));
 const OrganizerEventDetail = lazy(withChunkRetry(() => import('./screens/organizer/OrganizerEventDetail')));
@@ -77,22 +93,7 @@ export default function App() {
           <ErrorBoundary>
             <Suspense fallback={<FullScreenLoader />}>
               <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <RedirectIfAuthed>
-                      <Navigate to="/landing" replace />
-                    </RedirectIfAuthed>
-                  }
-                />
-                <Route
-                  path="/landing"
-                  element={
-                    <RedirectIfAuthed>
-                      <LandingScreen />
-                    </RedirectIfAuthed>
-                  }
-                />
+                {/* ---- auth screens (focused layout, no shell) ------------ */}
                 <Route
                   path="/login"
                   element={
@@ -109,37 +110,48 @@ export default function App() {
                     </RedirectIfAuthed>
                   }
                 />
-                <Route
-                  element={
-                    <RequireAuth>
-                      <AppShell />
-                    </RequireAuth>
-                  }
-                >
-                  <Route path="/home" element={<HomeScreen />} />
+
+                {/* ---- public browsing (shell, no session required) ------- */}
+                <Route element={<AppShell />}>
+                  <Route path="/" element={<LandingScreen />} />
+                  <Route
+                    path="/landing"
+                    element={
+                      <RedirectIfAuthed>
+                        <LandingScreen />
+                      </RedirectIfAuthed>
+                    }
+                  />
                   <Route path="/explore" element={<ExploreScreen />} />
-                  <Route path="/chats" element={<ChatListScreen />} />
-                  <Route path="/chats/:chatId" element={<ChatThreadScreen />} />
-                  <Route path="/profile" element={<ProfileScreen />} />
+                  <Route path="/event/:eventId" element={<EventDetailScreen />} />
+                  <Route path="/event/:eventId/register" element={<RegistrationScreen />} />
                   <Route path="/u/:uid" element={<UserProfileScreen />} />
                   <Route path="/u/:uid/followers" element={<FollowListScreen mode="followers" />} />
                   <Route path="/u/:uid/following" element={<FollowListScreen mode="following" />} />
+                  <Route path="/help" element={<HelpHub />} />
+                  <Route path="/help/:slug" element={<HelpArticleScreen />} />
+                </Route>
 
-                  <Route path="/event/:eventId" element={<EventDetailScreen />} />
-                  <Route path="/event/:eventId/register" element={<RegistrationScreen />} />
-                  <Route path="/event/:eventId/pay/:bookingId" element={<PaymentScreen />} />
-                  <Route path="/booking/:bookingId" element={<BookingScreen />} />
+                {/* ---- signed-in app (shell behind a session) ------------- */}
+                <Route element={<RequireAuth><AppShell /></RequireAuth>}>
+                  <Route path="/home" element={<HomeScreen />} />
+                  <Route path="/chats" element={<ChatListScreen />} />
+                  <Route path="/chats/:chatId" element={<ChatThreadScreen />} />
+                  <Route path="/profile" element={<ProfileScreen />} />
+                  <Route path="/notifications" element={<NotificationsScreen />} />
+
+                  <Route path="/tickets" element={<TicketsHub />} />
                   <Route path="/bookings" element={<BookingsScreen />} />
                   <Route path="/saved" element={<SavedScreen />} />
+                  <Route path="/booking/:bookingId" element={<BookingScreen />} />
+                  <Route path="/event/:eventId/pay/:bookingId" element={<PaymentScreen />} />
                   <Route path="/event/:eventId/photos" element={<EventPhotosScreen />} />
                   <Route path="/event/:eventId/rate" element={<RateOrganizerScreen />} />
 
-                  <Route path="/notifications" element={<NotificationsScreen />} />
-                  <Route path="/settings" element={<SettingsScreen />} />
-                  <Route path="/settings/blocked" element={<BlockedAccountsScreen />} />
-                  <Route path="/settings/payment-methods" element={<PaymentMethodsScreen />} />
+                  <Route path="/community" element={<CommunityHub />} />
 
-                  <Route path="/organizer" element={<OrganizerDashboard />} />
+                  <Route path="/host" element={<HostHub />} />
+                  <Route path="/organizer" element={<Navigate to="/host" replace />} />
                   <Route path="/organizer/events" element={<MyEventsScreen />} />
                   <Route path="/organizer/events/new" element={<CreateEventScreen />} />
                   <Route path="/organizer/payouts" element={<PayoutSettingsScreen />} />
@@ -153,8 +165,23 @@ export default function App() {
                   <Route path="/organizer/events/:id/invite" element={<SendInvitationsScreen />} />
                   <Route path="/organizer/events/:id/scan" element={<QrScannerScreen />} />
 
+                  <Route path="/settings" element={<AccountHub />} />
+                  <Route path="/settings/account" element={<AccountSettingsScreen />} />
+                  <Route path="/settings/security" element={<SecuritySettingsScreen />} />
+                  <Route path="/settings/notifications" element={<NotificationSettingsScreen />} />
+                  <Route path="/settings/blocked" element={<BlockedAccountsScreen />} />
+                  <Route path="/settings/payment-methods" element={<PaymentMethodsScreen />} />
+
                   <Route
                     path="/admin"
+                    element={
+                      <RequireRole role="admin">
+                        <AdminHub />
+                      </RequireRole>
+                    }
+                  />
+                  <Route
+                    path="/admin/overview"
                     element={
                       <RequireRole role="admin">
                         <AdminDashboard />
@@ -202,7 +229,7 @@ export default function App() {
                     }
                   />
 
-                <Route path="*" element={<NotFoundScreen />} />
+                  <Route path="*" element={<NotFoundScreen />} />
                 </Route>
               </Routes>
             </Suspense>

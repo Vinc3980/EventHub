@@ -1,5 +1,8 @@
 import { COLORS, SHADOW, backgroundTinted, deepViolet, tints } from './tokens';
 
+/** The cobalt → deep-violet gradient reused by featured hub chips and tiles. */
+export const TILE_GRADIENT = `linear-gradient(135deg, ${COLORS.primary} 0%, ${deepViolet} 100%)`;
+
 /**
  * Writes the token file's values as CSS custom properties. `tokens.ts` remains
  * the only place a colour literal exists; this is the single bridge to CSS.
@@ -29,4 +32,5 @@ export function applyCssVariables(): void {
   set('--eh-tint-primary-10', tints.primary10);
   set('--eh-shadow-card', SHADOW.card);
   set('--eh-shadow-dark', SHADOW.dark);
+  set('--eh-tile-gradient', TILE_GRADIENT);
 }
