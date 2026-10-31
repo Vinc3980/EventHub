@@ -143,9 +143,24 @@ describe('role merge in the UI', () => {
     expect(within(tabs).getByRole('tab', { name: 'Tickets' })).toBeInTheDocument();
     expect(within(tabs).getByRole('tab', { name: 'Saved' })).toBeInTheDocument();
 
+    // The Events tab is the default panel (this account owns no events).
+    await screen.findByText('No events yet', {}, { timeout: 10_000 });
+
     await userEvent.click(within(tabs).getByRole('tab', { name: 'Tickets' }));
+    // The panel really switches: the Tickets tab becomes selected and the
+    // Events panel's content is replaced by the bookings panel.
+    expect(within(tabs).getByRole('tab', { name: 'Tickets' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    expect(within(tabs).getByRole('tab', { name: 'Events' })).toHaveAttribute(
+      'aria-selected',
+      'false',
+    );
+    expect(screen.queryByText('No events yet')).not.toBeInTheDocument();
+    // The bookings panel renders: either the empty state or the event cards.
     expect(
-      await screen.findByText(/No bookings yet|bookings/i, {}, { timeout: 10_000 }),
+      await screen.findByText(/No bookings yet|Accra Music Festival/i, {}, { timeout: 10_000 }),
     ).toBeInTheDocument();
   }, 30_000);
 });
