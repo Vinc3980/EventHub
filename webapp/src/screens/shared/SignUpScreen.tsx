@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Lock1, Sms } from 'iconsax-react';
 import { Button, Field, Input } from '../../components/ui';
 import { useAuth } from '../../app/AuthProvider';
+import { safeNext } from '../../app/guards';
 import { AuthService } from '../../services/authService';
 
 interface FieldErrors {
@@ -31,6 +32,7 @@ function BrandMark({ size = 44 }: { size?: number }) {
 export default function SignUpScreen() {
   const { signUp } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -57,7 +59,7 @@ export default function SignUpScreen() {
     setLoading(true);
     try {
       await signUp(cleanEmail, password);
-      navigate('/home');
+      navigate(safeNext(location.search, '/home'));
     } catch (error) {
       setAuthError(AuthService.friendlyMessage(error));
       setLoading(false);

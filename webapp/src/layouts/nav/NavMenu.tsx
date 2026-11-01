@@ -69,7 +69,11 @@ export function NavMenu({ menu, active, uid, open, onOpenChange, onEventTool }: 
   useEffect(() => clearTimers, []);
 
   useDismissOnOutside(open, [triggerRef, panelRef], close);
-  useEscape(open, close);
+  useEscape(open, () => {
+    close();
+    // Return focus to the trigger so keyboard users are not stranded.
+    triggerRef.current?.focus();
+  });
 
   const openPanel = (focus: 'first' | 'last' | 'none' = 'none') => {
     clearTimers();

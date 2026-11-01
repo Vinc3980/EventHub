@@ -1,8 +1,9 @@
 import { useMemo, useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Lock1, Sms } from 'iconsax-react';
 import { Button, Field, Input } from '../../components/ui';
 import { useAuth } from '../../app/AuthProvider';
+import { safeNext } from '../../app/guards';
 import { AuthService } from '../../services/authService';
 
 interface FieldErrors {
@@ -40,6 +41,7 @@ export default function LoginScreen() {
   const { signIn } = useAuth();
   const authService = useMemo(() => new AuthService(), []);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -70,7 +72,9 @@ export default function LoginScreen() {
       const nextUid = await authService.currentUid();
       const profile = nextUid ? await authService.fetchUserProfile(nextUid) : null;
       const roles = (profile?.roles as string[] | undefined) ?? [];
-      navigate(roles.includes('admin') ? '/admin' : '/home');
+      const fallback = roles.includes('admin') ? '/admin' : '/home';
+      // Return to the page that required a session (section 3.5).
+      navigate(safeNext(location.search, fallback));
     } catch (error) {
       setAuthError(AuthService.friendlyMessage(error));
       setLoading(false);

@@ -28,6 +28,14 @@ describe('route metadata is exhaustive', () => {
     expect(missing, `routes without meta: ${missing.join(', ')}`).toEqual([]);
   });
 
+  it('has no orphan metadata for routes that no longer exist', () => {
+    const declared = new Set(appPaths());
+    const orphans = ROUTE_META.filter(
+      (meta) => meta.pattern !== '*' && !declared.has(meta.pattern),
+    ).map((meta) => meta.pattern);
+    expect(orphans, `meta without a route: ${orphans.join(', ')}`).toEqual([]);
+  });
+
   it('gives every route a title, a known parent and a valid layout', () => {
     const known = new Set(ROUTE_META.map((meta) => meta.pattern));
     for (const meta of ROUTE_META) {

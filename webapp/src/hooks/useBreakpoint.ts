@@ -10,7 +10,7 @@ function current(): Breakpoint {
   return 'mobile';
 }
 
-/** Breakpoints: <768 mobile, 768–1023 tablet (icon rail), ≥1024 desktop sidebar. */
+/** Breakpoints: <768 mobile, 768–1023 tablet, ≥1024 desktop (top nav). */
 export function useBreakpoint(): Breakpoint {
   const [bp, setBp] = useState<Breakpoint>(current);
   useEffect(() => {
