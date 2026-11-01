@@ -115,7 +115,7 @@ export const ROUTE_META: readonly RouteMeta[] = [
   },
 
   // ---- tickets module ----------------------------------------------------
-  { pattern: '/tickets', title: 'Tickets', parent: '/', navGroup: 'tickets', layout: 'default' },
+  { pattern: '/tickets', title: 'Tickets', parent: '/', navGroup: 'tickets', layout: 'default', header: true },
   {
     pattern: '/bookings',
     title: 'My bookings',
@@ -165,7 +165,7 @@ export const ROUTE_META: readonly RouteMeta[] = [
   },
 
   // ---- host module -------------------------------------------------------
-  { pattern: '/host', title: 'Host', parent: '/', navGroup: 'host', layout: 'default' },
+  { pattern: '/host', title: 'Host', parent: '/', navGroup: 'host', layout: 'default', header: true },
   { pattern: '/organizer', title: 'Host', parent: '/host', navGroup: 'host', layout: 'default' },
   {
     pattern: '/organizer/events',
@@ -261,8 +261,9 @@ export const ROUTE_META: readonly RouteMeta[] = [
     parent: '/',
     navGroup: 'community',
     layout: 'default',
+    header: true,
   },
-  { pattern: '/settings', title: 'Settings', parent: '/', navGroup: 'none', layout: 'default' },
+  { pattern: '/settings', title: 'Settings', parent: '/', navGroup: 'none', layout: 'default', header: true },
   {
     pattern: '/settings/account',
     title: 'Account details',
@@ -305,7 +306,7 @@ export const ROUTE_META: readonly RouteMeta[] = [
   },
 
   // ---- admin -------------------------------------------------------------
-  { pattern: '/admin', title: 'Admin', parent: '/', navGroup: 'admin', layout: 'default' },
+  { pattern: '/admin', title: 'Admin', parent: '/', navGroup: 'admin', layout: 'default', header: true },
   {
     pattern: '/admin/overview',
     title: 'Overview',

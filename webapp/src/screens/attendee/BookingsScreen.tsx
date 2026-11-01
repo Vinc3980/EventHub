@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Calendar1, Location, Ticket } from 'iconsax-react';
 import { EmptyState, ErrorState, Skeleton, StatusTag, Tabs } from '../../components/ui';
 import { useAuth } from '../../app/AuthProvider';
@@ -8,10 +8,24 @@ import { EventService, RegistrationService } from '../../services';
 import { Event, type Booking } from '../../models';
 import { formatDateCard } from '../../lib/format';
 
-type Bucket = 'upcoming' | 'past' | 'cancelled';
+type Bucket = 'upcoming' | 'pending' | 'past' | 'cancelled';
+
+/**
+ * The Tickets hub links here with `?view=…`; map those shortcuts onto the tab
+ * the list opens on. `refunds` is the attendee-facing name for cancelled or
+ * failed bookings.
+ */
+const VIEW_TO_BUCKET: Record<string, Bucket> = {
+  upcoming: 'upcoming',
+  pending: 'pending',
+  past: 'past',
+  refunds: 'cancelled',
+  cancelled: 'cancelled',
+};
 
 function bucketOf(booking: Booking, event: Event | null | undefined): Bucket {
   if (booking.status === 'cancelled' || booking.status === 'payment_failed') return 'cancelled';
+  if (booking.status === 'pending') return 'pending';
   const finished = event
     ? event.status === 'completed' || event.date.getTime() < Date.now()
     : false;
@@ -23,8 +37,23 @@ export default function BookingsScreen() {
   const { uid } = useAuth();
   const eventService = new EventService();
   const registrationService = new RegistrationService();
-  const [bucket, setBucket] = useState<Bucket>('upcoming');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const viewParam = searchParams.get('view');
+  const [bucket, setBucket] = useState<Bucket>(VIEW_TO_BUCKET[viewParam ?? ''] ?? 'upcoming');
   const [retry, setRetry] = useState(0);
+
+  // Keep the tab in sync with the URL (back/forward and hub shortcuts).
+  useEffect(() => {
+    const next = VIEW_TO_BUCKET[viewParam ?? ''];
+    if (next) setBucket(next);
+  }, [viewParam]);
+
+  function changeBucket(next: Bucket) {
+    setBucket(next);
+    const query: Record<string, string> =
+      next === 'upcoming' ? {} : { view: next === 'cancelled' ? 'refunds' : next };
+    setSearchParams(query, { replace: true });
+  }
 
   const { data: bookings, loading, error } = useLive<Booking[]>(
     () => registrationService.bookingsForUser(uid ?? ''),
@@ -49,7 +78,7 @@ export default function BookingsScreen() {
   ).data;
 
   const counts = useMemo(() => {
-    const out: Record<Bucket, number> = { upcoming: 0, past: 0, cancelled: 0 };
+    const out: Record<Bucket, number> = { upcoming: 0, pending: 0, past: 0, cancelled: 0 };
     for (const booking of bookingIds) {
       out[bucketOf(booking, eventsById?.[booking.eventId])]++;
     }
@@ -76,9 +105,10 @@ export default function BookingsScreen() {
       <Tabs
         className="mb-4"
         value={bucket}
-        onChange={(next) => setBucket(next as Bucket)}
+        onChange={(next) => changeBucket(next as Bucket)}
         tabs={[
           { value: 'upcoming', label: 'Upcoming', badge: counts.upcoming },
+          { value: 'pending', label: 'Pending', badge: counts.pending },
           { value: 'past', label: 'Past', badge: counts.past },
           { value: 'cancelled', label: 'Cancelled', badge: counts.cancelled },
         ]}

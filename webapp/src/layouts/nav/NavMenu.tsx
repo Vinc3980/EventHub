@@ -52,7 +52,7 @@ export function NavMenu({ menu, active, uid, open, onOpenChange, onEventTool }: 
   const panelRef = useRef<HTMLDivElement>(null);
   const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [align, setAlign] = useState<'left' | 'right'>('left');
+  const [offset, setOffset] = useState(0);
 
   const clearTimers = () => {
     if (openTimer.current) clearTimeout(openTimer.current);
@@ -80,7 +80,11 @@ export function NavMenu({ menu, active, uid, open, onOpenChange, onEventTool }: 
     const rect = triggerRef.current?.getBoundingClientRect();
     if (rect) {
       const panelWidth = menu.sections.length > 1 ? 640 : 320;
-      setAlign(rect.left + panelWidth > window.innerWidth - 16 ? 'right' : 'left');
+      // Clamp the panel inside the viewport: a wide mega panel cannot always be
+      // left- or right-aligned to its trigger without clipping an edge.
+      const maxLeft = Math.max(16, window.innerWidth - panelWidth - 16);
+      const desired = Math.min(Math.max(16, rect.left), maxLeft);
+      setOffset(desired - rect.left);
     }
     onOpenChange(true);
     if (focus === 'none') return;
@@ -210,7 +214,7 @@ export function NavMenu({ menu, active, uid, open, onOpenChange, onEventTool }: 
 
       {open && (
         <div ref={panelRef} onKeyDown={onPanelKeyDown}>
-          <DropdownPanel id={panelId} labelledBy={labelId} align={align} widthClass={mega ? 'w-[640px]' : 'w-[320px]'}>
+          <DropdownPanel id={panelId} labelledBy={labelId} offset={offset} widthClass={mega ? 'w-[640px]' : 'w-[320px]'}>
             <div
               className={
                 mega
@@ -218,8 +222,14 @@ export function NavMenu({ menu, active, uid, open, onOpenChange, onEventTool }: 
                   : 'max-h-[70vh] overflow-y-auto p-3'
               }
             >
-              {menu.sections.map((section, col) =>
-                section.items.map((entry, row) => {
+              {menu.sections.map((section, col) => (
+                <div key={section.id} className="min-w-0">
+                  {section.title && (
+                    <p className="px-2.5 pb-1.5 text-section uppercase tracking-wide text-textmuted">
+                      {section.title}
+                    </p>
+                  )}
+                  {section.items.map((entry, row) => {
                   const href = entryHref(entry, uid);
                   const Icon = entry.icon;
                   const body = (
@@ -268,8 +278,9 @@ export function NavMenu({ menu, active, uid, open, onOpenChange, onEventTool }: 
                       {body}
                     </Link>
                   );
-                }),
-              )}
+                  })}
+                </div>
+              ))}
             </div>
           </DropdownPanel>
         </div>

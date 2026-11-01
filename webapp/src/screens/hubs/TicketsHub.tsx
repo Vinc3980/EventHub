@@ -78,7 +78,7 @@ export default function TicketsHub() {
       label: 'Upcoming tickets',
       description: 'Events you are going to.',
       icon: Ticket,
-      to: '/tickets?view=upcoming',
+      to: '/bookings?view=upcoming',
       count: counts.upcoming,
     },
     {
@@ -86,7 +86,7 @@ export default function TicketsHub() {
       label: 'Past events',
       description: 'Tickets you have already used.',
       icon: Calendar1,
-      to: '/tickets?view=past',
+      to: '/bookings?view=past',
       count: counts.past,
     },
     {
@@ -94,7 +94,7 @@ export default function TicketsHub() {
       label: 'Pending payment',
       description: 'Bookings waiting for MoMo approval.',
       icon: Receipt,
-      to: '/tickets?view=pending',
+      to: '/bookings?view=pending',
       count: counts.pending,
     },
     {
@@ -102,7 +102,7 @@ export default function TicketsHub() {
       label: 'Refunds & cancellations',
       description: 'Refund requests and cancelled bookings.',
       icon: Refresh,
-      to: '/tickets?view=refunds',
+      to: '/bookings?view=refunds',
       count: counts.cancelled,
     },
     {
@@ -125,7 +125,7 @@ export default function TicketsHub() {
       label: 'Rate events',
       description: 'Leave a review after you attend.',
       icon: Star1,
-      to: '/bookings',
+      to: '/bookings?view=past',
     },
   ];
 

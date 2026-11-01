@@ -49,6 +49,8 @@ export interface DropdownPanelProps {
   id: string;
   labelledBy: string;
   align?: 'left' | 'right';
+  /** Pixel offset from the trigger wrapper's left edge (clamped by the caller). */
+  offset?: number;
   /** Tailwind width class — kept as a prop so the mega panel and list panel differ. */
   widthClass?: string;
   children: ReactNode;
@@ -56,13 +58,14 @@ export interface DropdownPanelProps {
 
 /**
  * The floating panel itself. Positioned absolutely against its (relative)
- * trigger wrapper; `align="right"` pins the right edge so the panel never
- * clips past the viewport's right side.
+ * trigger wrapper; `offset` clamps a wide mega panel inside the viewport so it
+ * never clips off either edge, while `align` covers the small list dropdowns.
  */
 export function DropdownPanel({
   id,
   labelledBy,
   align = 'left',
+  offset,
   widthClass = 'w-[320px]',
   children,
 }: DropdownPanelProps) {
@@ -71,8 +74,9 @@ export function DropdownPanel({
       id={id}
       role="menu"
       aria-labelledby={labelledBy}
+      style={offset === undefined ? undefined : { left: offset }}
       className={`absolute top-full z-50 mt-2 ${widthClass} max-w-[calc(100vw-32px)] animate-panelin motion-reduce:animate-none ${
-        align === 'right' ? 'right-0' : 'left-0'
+        offset === undefined ? (align === 'right' ? 'right-0' : 'left-0') : ''
       }`}
     >
       <div className="overflow-hidden rounded-base border border-border bg-surface shadow-popover">{children}</div>
