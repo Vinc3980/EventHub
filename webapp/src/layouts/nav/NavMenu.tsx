@@ -77,7 +77,8 @@ export function NavMenu({ menu, active, uid, open, onOpenChange, onEventTool }: 
 
   const openPanel = (focus: 'first' | 'last' | 'none' = 'none') => {
     clearTimers();
-    const rect = triggerRef.current?.getBoundingClientRect();
+    // Measure the whole item (label + chevron), not just the chevron button.
+    const rect = (triggerRef.current?.parentElement ?? triggerRef.current)?.getBoundingClientRect();
     if (rect) {
       const panelWidth = menu.sections.length > 1 ? 640 : 320;
       // Clamp the panel inside the viewport: a wide mega panel cannot always be
@@ -188,29 +189,39 @@ export function NavMenu({ menu, active, uid, open, onOpenChange, onEventTool }: 
 
   return (
     <div
-      className="relative"
+      className="relative flex items-center"
       onMouseEnter={scheduleOpen}
       onMouseLeave={scheduleClose}
     >
+      <Link
+        id={labelId}
+        to={menu.to}
+        onKeyDown={onTriggerKeyDown}
+        onClick={() => onOpenChange(false)}
+        className={`flex h-[72px] items-center pl-3 text-body font-semibold transition-colors duration-200 ${
+          active ? 'text-primary' : 'text-textmuted hover:text-textprimary'
+        }`}
+      >
+        {menu.label}
+      </Link>
       <button
         ref={triggerRef}
-        id={labelId}
         type="button"
         aria-haspopup="true"
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
+        aria-label={`${menu.label} menu`}
         onClick={() => (open ? close() : openPanel('none'))}
         onKeyDown={onTriggerKeyDown}
-        className={`relative flex h-[72px] items-center gap-1.5 px-3 text-body font-semibold transition-colors duration-200 ${
+        className={`flex h-[72px] items-center pl-0.5 pr-3 transition-colors duration-200 ${
           active || open ? 'text-primary' : 'text-textmuted hover:text-textprimary'
         }`}
       >
-        {menu.label}
         <ArrowDown2 size={14} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
-        {(active || open) && (
-          <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-pill bg-primary" aria-hidden="true" />
-        )}
       </button>
+      {(active || open) && (
+        <span className="absolute inset-x-1 bottom-0 h-0.5 rounded-pill bg-primary" aria-hidden="true" />
+      )}
 
       {open && (
         <div ref={panelRef} onKeyDown={onPanelKeyDown}>
