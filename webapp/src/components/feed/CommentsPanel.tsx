@@ -15,7 +15,7 @@ interface AuthorBrief {
 }
 
 /**
- * Comment rail for a single post — used both in the desktop right column and
+ * Comment panel for a single post — used both in the desktop right column and
  * inside the mobile `Sheet`. Self-contained: it streams the post, the author
  * directory and handles its own composer.
  */

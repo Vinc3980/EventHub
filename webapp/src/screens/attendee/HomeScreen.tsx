@@ -111,7 +111,7 @@ export default function HomeScreen() {
 
   const feed = posts ?? [];
 
-  // Keep the comment rail pointed at a post that is actually on screen — but
+  // Keep the comment panel pointed at a post that is actually on screen — but
   // never reopen a selection the user just closed on purpose.
   useEffect(() => {
     if (posts === undefined) return;
@@ -150,7 +150,7 @@ export default function HomeScreen() {
     }
     manuallyClosed.current = false;
     setSelectedPostId(postId);
-    // Below the desktop breakpoint the rail is hidden, so comments open in a
+    // Below the desktop breakpoint the panel is hidden, so comments open in a
     // Sheet instead (useBreakpoint matches the `desktop:` Tailwind screen).
     if (breakpoint !== 'desktop') setSheetPostId(postId);
   }

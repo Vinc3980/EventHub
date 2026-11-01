@@ -249,7 +249,7 @@ export default function EventDetailScreen() {
   }
 
   /**
-   * Ticket panel — rendered in the sticky right rail on desktop and inline
+   * Ticket panel — rendered in the sticky right column on desktop and inline
    * above the sections on phones/tablets. `withCta` is false on mobile because
    * the sticky bottom bar carries the same call to action there.
    */
@@ -604,7 +604,7 @@ export default function EventDetailScreen() {
       </div>
         </div>
 
-        {/* ---- Sticky ticket rail (desktop) --------------------------- */}
+        {/* ---- Sticky ticket panel (desktop) -------------------------- */}
         <aside className="hidden desktop:block" aria-label="Tickets">
           <div className="sticky top-[88px]">{renderTickets(true)}</div>
         </aside>

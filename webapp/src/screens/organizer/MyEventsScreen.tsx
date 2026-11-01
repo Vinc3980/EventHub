@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { AddCircle, Calendar1, Edit } from 'iconsax-react';
 import { useAuth } from '../../app/AuthProvider';
 import { useToast } from '../../app/ToastProvider';
@@ -69,10 +69,20 @@ function EventRow({ ev, onSubmit }: { ev: Event; onSubmit: () => void }) {
 export default function MyEventsScreen() {
   const { uid } = useAuth();
   const { toast } = useToast();
-  const [tab, setTab] = useState<TabKey>('published');
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view = searchParams.get('view');
+  const duplicateMode = searchParams.get('duplicate') === '1';
+  const [tab, setTab] = useState<TabKey>(view === 'drafts' ? 'draft' : 'published');
   const [retry, setRetry] = useState(0);
   const [pending, setPending] = useState<Event | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [duplicating, setDuplicating] = useState<string | null>(null);
+
+  // The Host menu links here with ?view=drafts; keep the tab in sync with it.
+  useEffect(() => {
+    if (view === 'drafts') setTab('draft');
+  }, [view]);
 
   const { data: owned, loading, error } = useServiceLive(
     eventService.eventsByOwner(uid ?? ''),
@@ -87,6 +97,26 @@ export default function MyEventsScreen() {
     draft: events.filter((ev) => ev.status === 'draft').length,
   };
   const visible = events.filter((ev) => ev.status === tab);
+
+  function changeTab(next: TabKey) {
+    setTab(next);
+    if (!duplicateMode) {
+      setSearchParams(next === 'draft' ? { view: 'drafts' } : {}, { replace: true });
+    }
+  }
+
+  async function duplicateEvent(ev: Event) {
+    setDuplicating(ev.id);
+    try {
+      const newId = await eventService.duplicateEvent(ev.id, uid ?? '');
+      toast('Event duplicated — finish the new listing.', 'success');
+      navigate(`/organizer/events/${newId}/edit`);
+    } catch (err) {
+      toast(`Could not duplicate: ${err instanceof Error ? err.message : String(err)}`, 'error');
+    } finally {
+      setDuplicating(null);
+    }
+  }
 
   async function confirmSubmit() {
     if (!pending) return;
@@ -116,12 +146,83 @@ export default function MyEventsScreen() {
     return <ErrorState title="Could not load events." onRetry={() => setRetry((n) => n + 1)} />;
   }
 
+  if (duplicateMode) {
+    return (
+      <div className="space-y-4 animate-fadeup">
+        <div className="flex min-w-0 items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-subtitle text-textprimary">Duplicate an event</h2>
+            <p className="mt-1 text-caption text-textmuted">
+              Pick an event to copy into a new listing, then adjust the details.
+            </p>
+          </div>
+          <Link
+            to="/organizer/events"
+            className="shrink-0 rounded-md border border-border bg-surface px-3 py-2 text-button text-textprimary transition-colors duration-200 hover:border-primary hover:text-primary"
+          >
+            Cancel
+          </Link>
+        </div>
+
+        {events.length === 0 ? (
+          <div className="rounded-base border border-border bg-surface shadow-card">
+            <EmptyState
+              icon={<Calendar1 size={26} />}
+              title="No events to duplicate"
+              body="Create an event first, then you can copy it later."
+              action={
+                <Link
+                  to="/organizer/events/new"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 text-button text-white transition-[filter] duration-200 hover:brightness-95"
+                >
+                  <AddCircle size={18} />
+                  Create event
+                </Link>
+              }
+            />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {events.map((ev) => (
+              <div
+                key={ev.id}
+                className="flex min-w-0 items-center gap-3 rounded-base border border-border bg-surface p-3 shadow-card"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-neutralbg text-textmuted">
+                  {ev.coverImageUrl ? (
+                    <CoverMedia url={ev.coverImageUrl} className="h-full w-full object-cover" />
+                  ) : (
+                    <Calendar1 size={18} />
+                  )}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-body font-bold text-textprimary">{ev.title}</span>
+                  <span className="block truncate text-caption text-textmuted">
+                    {formatDateCard(ev.date)} · {ev.venue}
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  disabled={duplicating === ev.id}
+                  onClick={() => void duplicateEvent(ev)}
+                  className="shrink-0 rounded-md bg-primary px-3 py-2 text-button text-white transition-[filter] duration-200 hover:brightness-95 disabled:opacity-60"
+                >
+                  {duplicating === ev.id ? 'Copying…' : 'Duplicate'}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 animate-fadeup">
       <Tabs
         tabs={TABS.map((item) => ({ ...item, badge: counts[item.value] }))}
         value={tab}
-        onChange={(next) => setTab(next as TabKey)}
+        onChange={(next) => changeTab(next as TabKey)}
       />
 
       <OrgRowLink

@@ -272,7 +272,7 @@ const HOST_SECTIONS: NavSection[] = [
       {
         id: 'duplicate',
         label: 'Duplicate an event',
-        description: 'Copy a past event into a new draft.',
+        description: 'Copy an event into a new listing.',
         icon: Copy,
         to: '/organizer/events?duplicate=1',
       },

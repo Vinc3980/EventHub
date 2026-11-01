@@ -1,6 +1,6 @@
 /**
  * Desktop top navigation (≥1024px) — the Eventbrite-style horizontal bar that
- * replaces the old left rail (section 3.2). 72px sticky, active item carries a
+ * replaces the old left navigation (section 3.2). 72px sticky, active item carries a
  * 2px primary underline, submenus open as mega/list panels.
  *
  * The account button's caption is what carries the merged-role signal: a plain

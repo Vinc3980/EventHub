@@ -37,7 +37,7 @@ describe('home comment icon toggle', () => {
     });
     expect(buttons.length).toBeGreaterThan(1);
 
-    // The rail auto-selects the first post on load.
+    // The panel auto-selects the first post on load.
     await waitFor(() => expect(buttons[0]).toHaveAttribute('aria-pressed', 'true'), {
       timeout: 5000,
     });
@@ -75,7 +75,7 @@ describe('home comment icon toggle', () => {
 
     await userEvent.click(buttons[0]);
     const dialog = await screen.findByRole('dialog', {}, { timeout: 10_000 });
-    // The desktop rail is hidden by CSS (jsdom does not apply it), so scope
+    // The desktop panel is hidden by CSS (jsdom does not apply it), so scope
     // the assertions to the Sheet itself.
     expect(within(dialog).getByRole('heading', HEADING)).toBeInTheDocument();
 

@@ -12,7 +12,7 @@ import { Avatar, Skeleton } from './ui';
 export interface SuggestedUsersProps {
   /** How many people to recommend. */
   limit?: number;
-  /** `list` = compact rows (Home rail / empty states), `grid` = cards (Explore). */
+  /** `list` = compact rows (Home column / empty states), `grid` = cards (Explore). */
   layout?: 'list' | 'grid';
   title?: string;
   subtitle?: string;

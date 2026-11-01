@@ -1,5 +1,5 @@
 /**
- * Application shell (section 3.3). The left rail is gone: a horizontal top
+ * Application shell (section 3.3). The left navigation is gone: a horizontal top
  * nav carries the desktop navigation, a compact bar + drawer + bottom tabs
  * carry phone/tablet, and a footer closes every default-layout page.
  *

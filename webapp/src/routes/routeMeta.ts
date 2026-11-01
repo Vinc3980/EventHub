@@ -44,7 +44,7 @@ export const ROUTE_META: readonly RouteMeta[] = [
   { pattern: '/landing', title: 'EventHub', parent: '/', public: true, layout: 'default' },
   { pattern: '/login', title: 'Log in', public: true, layout: 'focused' },
   { pattern: '/signup', title: 'Create account', public: true, layout: 'focused' },
-  { pattern: '/help', title: 'Help', parent: '/', navGroup: 'help', public: true, layout: 'default' },
+  { pattern: '/help', title: 'Help', parent: '/', navGroup: 'help', public: true, layout: 'default', header: true },
   {
     pattern: '/help/:slug',
     title: 'Help article',
@@ -60,6 +60,7 @@ export const ROUTE_META: readonly RouteMeta[] = [
     navGroup: 'explore',
     public: true,
     layout: 'default',
+    header: true,
   },
   {
     pattern: '/event/:eventId',
