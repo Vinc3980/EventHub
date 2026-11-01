@@ -1,5 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { Calendar2, User } from 'iconsax-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import {
+  Add,
+  Bookmark,
+  Calendar2,
+  CalendarTick,
+  Message,
+  SearchNormal,
+  Ticket,
+  User,
+} from 'iconsax-react';
 import {
   EmptyState,
   ErrorState,
@@ -25,6 +35,16 @@ interface AuthorBrief {
   avatarUrl: string;
 }
 
+/** Compact launcher tiles — the fast paths off Home (section 3.1). */
+const LAUNCHERS = [
+  { to: '/explore', label: 'Explore', icon: SearchNormal, description: 'Find something to go to' },
+  { to: '/tickets', label: 'Tickets', icon: Ticket, description: 'Your upcoming events' },
+  { to: '/bookings', label: 'Bookings', icon: CalendarTick, description: 'Past and pending' },
+  { to: '/saved', label: 'Saved', icon: Bookmark, description: 'Bookmarked events' },
+  { to: '/chats', label: 'Chats', icon: Message, description: 'Event group chats' },
+  { to: '/host', label: 'Host', icon: Add, description: 'Create and manage events' },
+];
+
 function greetingForHour(hour: number): string {
   if (hour < 12) return 'Good morning';
   if (hour < 17) return 'Good afternoon';
@@ -35,10 +55,15 @@ export default function HomeScreen() {
   const { uid, user } = useAuth();
   const { error: showError } = useToast();
   const breakpoint = useBreakpoint();
-  const [tab, setTab] = useState<FeedTab>('foryou');
+  const [params, setParams] = useSearchParams();
+  const initialTab: FeedTab = params.get('feed') === 'following' ? 'following' : 'foryou';
+  const [tab, setTab] = useState<FeedTab>(initialTab);
   const [retry, setRetry] = useState(0);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [sheetPostId, setSheetPostId] = useState<string | null>(null);
+  // `?compose=1` opens the composer once; the param is dropped so a reload
+  // does not reopen it.
+  const [composeOnMount] = useState(params.get('compose') === '1');
   // Set when the user explicitly closes the comments (via the post icon), so
   // the auto-select effect below does not immediately reopen the first post.
   const manuallyClosed = useRef(false);
@@ -99,6 +124,15 @@ export default function HomeScreen() {
       setSelectedPostId(posts[0].id);
     }
   }, [posts, selectedPostId]);
+
+  // Drop `?compose=1` from the URL once it has been honoured.
+  useEffect(() => {
+    if (params.get('compose') !== '1') return;
+    const next = new URLSearchParams(params);
+    next.delete('compose');
+    setParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const firstName = (user?.name ?? '').trim().split(/\s+/)[0] ?? '';
   const greeting = greetingForHour(new Date().getHours());
@@ -218,6 +252,29 @@ export default function HomeScreen() {
         </h1>
       </header>
 
+      {/* Launcher strip — six fast paths off Home. */}
+      <nav aria-label="Quick actions" className="mb-5">
+        <div className="no-scrollbar -mx-4 flex items-stretch gap-3 overflow-x-auto px-4 pb-1 tablet:-mx-6 tablet:px-6 wide:px-8">
+          {LAUNCHERS.map(({ to, label, icon: Icon, description }) => (
+            <Link
+              key={to}
+              to={to}
+              className="flex min-w-[148px] shrink-0 flex-col rounded-base border border-border bg-surface p-3 shadow-card transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-popover"
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary-6 text-primary">
+                <Icon size={18} />
+              </span>
+              <span className="mt-2 block min-w-0 truncate text-body font-bold text-textprimary">
+                {label}
+              </span>
+              <span className="mt-0.5 block min-w-0 truncate text-caption text-textmuted">
+                {description}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </nav>
+
       <Segmented
         ariaLabel="Feed"
         className="mb-4"
@@ -231,7 +288,7 @@ export default function HomeScreen() {
 
       <div className="grid grid-cols-1 gap-6 desktop:grid-cols-[minmax(0,1fr)_340px]">
         <div className="mx-auto w-full min-w-0 max-w-[840px] space-y-4">
-          <Composer />
+          <Composer autoOpen={composeOnMount} />
           {renderFeed()}
         </div>
 

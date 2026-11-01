@@ -248,9 +248,92 @@ export default function EventDetailScreen() {
     }
   }
 
+  /**
+   * Ticket panel — rendered in the sticky right rail on desktop and inline
+   * above the sections on phones/tablets. `withCta` is false on mobile because
+   * the sticky bottom bar carries the same call to action there.
+   */
+  const renderTickets = (withCta: boolean) => {
+    return (
+      <section className="overflow-hidden rounded-lg border border-border bg-surface shadow-card">
+        <div className="border-b border-border px-4 py-3.5">
+          <h2 className="text-subtitle text-textprimary">Select ticket</h2>
+        </div>
+        {event.ticketTypes.length === 0 && (
+          <p className="px-4 py-4 text-body text-textmuted">Free entry</p>
+        )}
+        {event.ticketTypes.map((tier) => {
+          const remaining = capacity?.[tier.name];
+          const soldOut = remaining === 0;
+          return (
+            <div
+              key={tier.name}
+              className="flex items-center justify-between gap-3 border-b border-border px-4 py-3.5 last:border-b-0"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-body font-bold text-textprimary">{tier.name}</p>
+                <p className="truncate text-caption text-textmuted">
+                  {soldOut
+                    ? 'Sold out'
+                    : remaining != null && remaining >= 0
+                      ? `${remaining} of ${tier.capacity} left`
+                      : `${tier.capacity} left`}
+                </p>
+                <span className="mt-1 inline-block">
+                  {tier.effectivePrice > 0 ? (
+                    <span className="text-body font-bold text-primary">
+                      {formatCurrency(tier.effectivePrice)}
+                    </span>
+                  ) : (
+                    <span className="text-body font-bold text-success">Free</span>
+                  )}
+                </span>
+              </div>
+              {soldOut ? (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  loading={joining === tier.name}
+                  onClick={() => void joinWaitlist(tier.name)}
+                >
+                  Join waitlist
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  onClick={() =>
+                    navigate(`/event/${eventId}/register`, { state: { tier: tier.name } })
+                  }
+                >
+                  {tier.effectivePrice > 0
+                    ? formatCurrency(tier.effectivePrice, { compact: true })
+                    : 'Free'}
+                </Button>
+              )}
+            </div>
+          );
+        })}
+        {withCta && (
+          <div className="border-t border-border p-4">
+            <Button
+              fullWidth
+              size="lg"
+              onClick={() => navigate(`/event/${eventId}/register`)}
+            >
+              {isFree ? 'RSVP Free' : `Get Tickets — ${formatCurrency(cheapest, { compact: true })}`}
+            </Button>
+          </div>
+        )}
+      </section>
+    );
+  };
+
   return (
     <div className="animate-fadeup pb-4">
-      <div className="relative overflow-hidden rounded-lg border border-border bg-surface shadow-card">
+      <div className="grid grid-cols-1 gap-6 desktop:grid-cols-[minmax(0,1fr)_360px]">
+        {/* ---- Main column -------------------------------------------- */}
+        <div className="min-w-0">
+          <div className="relative overflow-hidden rounded-lg border border-border bg-surface shadow-card">
         <div className="relative aspect-video w-full overflow-hidden bg-neutralbg">
           {event.isVideoUrl ? (
             <AppVideoPlayer
@@ -338,65 +421,8 @@ export default function EventDetailScreen() {
       </div>
 
       <div className="mt-4 space-y-3">
-        <section className="overflow-hidden rounded-lg border border-border bg-surface">
-          <div className="border-b border-border px-4 py-3.5">
-            <h2 className="text-subtitle text-textprimary">Select ticket</h2>
-          </div>
-          {event.ticketTypes.length === 0 && (
-            <p className="px-4 py-4 text-body text-textmuted">Free entry</p>
-          )}
-          {event.ticketTypes.map((tier) => {
-            const remaining = capacity?.[tier.name];
-            const soldOut = remaining === 0;
-            return (
-              <div
-                key={tier.name}
-                className="flex items-center justify-between gap-3 border-b border-border px-4 py-3.5 last:border-b-0"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-body font-bold text-textprimary">{tier.name}</p>
-                  <p className="truncate text-caption text-textmuted">
-                    {soldOut
-                      ? 'Sold out'
-                      : remaining != null && remaining >= 0
-                        ? `${remaining} of ${tier.capacity} left`
-                        : `${tier.capacity} left`}
-                  </p>
-                  <span className="mt-1 inline-block">
-                    {tier.effectivePrice > 0 ? (
-                      <span className="text-body font-bold text-primary">
-                        {formatCurrency(tier.effectivePrice)}
-                      </span>
-                    ) : (
-                      <span className="text-body font-bold text-success">Free</span>
-                    )}
-                  </span>
-                </div>
-                {soldOut ? (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    loading={joining === tier.name}
-                    onClick={() => void joinWaitlist(tier.name)}
-                  >
-                    Join waitlist
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    onClick={() =>
-                      navigate(`/event/${eventId}/register`, { state: { tier: tier.name } })
-                    }
-                  >
-                    {tier.effectivePrice > 0
-                      ? formatCurrency(tier.effectivePrice, { compact: true })
-                      : 'Free'}
-                  </Button>
-                )}
-              </div>
-            );
-          })}
-        </section>
+        {/* Phones and tablets: tickets sit inline above the sections. */}
+        <div className="desktop:hidden">{renderTickets(false)}</div>
 
         <Section
           title="About this event"
@@ -576,8 +602,15 @@ export default function EventDetailScreen() {
           </a>
         </section>
       </div>
+        </div>
 
-      <div className="sticky bottom-[68px] z-30 -mx-4 mt-4 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur tablet:bottom-0">
+        {/* ---- Sticky ticket rail (desktop) --------------------------- */}
+        <aside className="hidden desktop:block" aria-label="Tickets">
+          <div className="sticky top-[88px]">{renderTickets(true)}</div>
+        </aside>
+      </div>
+
+      <div className="sticky bottom-[68px] z-30 -mx-4 mt-4 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur desktop:hidden">
         <Button
           fullWidth
           size="lg"

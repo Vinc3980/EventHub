@@ -21,12 +21,12 @@ const SOFT_CHAR_LIMIT = 280;
  * avatar + prompt; expanded it is an auto-growing textarea with an optional
  * image (≤1.5 MB) or video (≤15 MB) attachment.
  */
-export function Composer() {
+export function Composer({ autoOpen = false }: { autoOpen?: boolean }) {
   const { uid, user } = useAuth();
   const { toast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(autoOpen);
   const [text, setText] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaKind, setMediaKind] = useState<MediaKind | null>(null);
