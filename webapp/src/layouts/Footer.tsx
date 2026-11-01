@@ -35,10 +35,23 @@ export function Footer({ uid }: { uid: string | null }) {
 
   return (
     <footer className="mt-12 bg-textprimary text-white">
+      <div
+        className="h-0.5 w-full"
+        style={{
+          backgroundImage:
+            'linear-gradient(90deg, var(--eh-primary) 0%, var(--eh-deep-violet) 100%)',
+        }}
+        aria-hidden="true"
+      />
       <div className="mx-auto w-full max-w-[1280px] px-4 py-10 tablet:px-6 wide:px-8">
-        <div className="mb-8 flex items-center gap-2.5">
-          <BrandMark />
-          <span className="text-title font-extrabold tracking-tight">EventHub</span>
+        <div className="mb-8">
+          <div className="flex items-center gap-2.5">
+            <BrandMark />
+            <span className="text-title font-extrabold tracking-tight">EventHub</span>
+          </div>
+          <p className="mt-2 max-w-sm text-caption text-white/70">
+            The modern platform for discovering, organizing and celebrating community events across Ghana.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 gap-2 tablet:grid-cols-2 tablet:gap-8 wide:grid-cols-4">
@@ -75,7 +88,7 @@ function FooterColumn({
           <li key={entry.id}>
             <Link
               to={href}
-              className="min-w-0 truncate text-body text-white/70 transition-colors duration-200 hover:text-white"
+              className="min-w-0 truncate text-body text-white/70 transition-colors duration-200 hover:text-primary"
             >
               {entry.label}
             </Link>

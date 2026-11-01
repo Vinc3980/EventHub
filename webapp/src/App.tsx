@@ -113,7 +113,14 @@ export default function App() {
 
                 {/* ---- public browsing (shell, no session required) ------- */}
                 <Route element={<AppShell />}>
-                  <Route path="/" element={<LandingScreen />} />
+                  <Route
+                    path="/"
+                    element={
+                      <RedirectIfAuthed>
+                        <LandingScreen />
+                      </RedirectIfAuthed>
+                    }
+                  />
                   <Route
                     path="/landing"
                     element={

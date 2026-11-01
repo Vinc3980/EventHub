@@ -8,9 +8,10 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Add, Logout, Setting2, ShieldTick } from 'iconsax-react';
+import { Add, Bookmark, Logout, Message, MessageQuestion, Setting2, ShieldTick, Ticket } from 'iconsax-react';
 import { effectiveRole, useAuth } from '../../app/AuthProvider';
 import { Avatar } from '../../components/ui';
+import { useChats, useChatMeta } from '../../components/SocialData';
 import { navGroupFor } from '../../routes/routeMeta';
 import { NavMenu } from './NavMenu';
 import { NavSearch } from './NavSearch';
@@ -139,6 +140,10 @@ export function TopNav({ onEventTool }: TopNavProps) {
   // Close any open submenu on navigation.
   useEffect(() => setOpenMenu(null), [location.pathname, location.search]);
 
+  const { data: chats } = useChats(uid);
+  const chatMeta = useChatMeta(chats, uid);
+  const hasUnreadChats = (chats ?? []).some((chat) => chatMeta[chat.id]?.unread);
+
   const menus = useMemo(() => (user ? NAV_MENUS : LOGGED_OUT_MENUS), [user]);
 
   const joinedLabel = useMemo(() => {
@@ -175,7 +180,12 @@ export function TopNav({ onEventTool }: TopNavProps) {
             ),
           )}
 
-          <ListDropdown label="Help" items={HELP_MENU_ITEMS} widthClass="w-[340px]" />
+          <ListDropdown
+            label="Help"
+            icon={<MessageQuestion size={18} />}
+            items={HELP_MENU_ITEMS}
+            widthClass="w-[340px]"
+          />
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
@@ -189,6 +199,20 @@ export function TopNav({ onEventTool }: TopNavProps) {
               >
                 <Add size={18} />
                 Create event
+              </Link>
+              <Link
+                to="/chats"
+                aria-label="Chats"
+                title="Chats"
+                className="relative flex h-10 w-10 items-center justify-center rounded-full text-textprimary transition-colors duration-200 hover:bg-primary-6"
+              >
+                <Message size={22} />
+                {hasUnreadChats && (
+                  <span
+                    className="absolute right-2 top-2 h-2 w-2 rounded-full bg-accent"
+                    aria-hidden="true"
+                  />
+                )}
               </Link>
               <NotificationBell />
               <ListDropdown
@@ -231,7 +255,21 @@ export function TopNav({ onEventTool }: TopNavProps) {
                   className="flex items-center gap-3 px-4 py-2.5 text-body font-semibold text-textprimary transition-colors duration-200 hover:bg-primary-6"
                 >
                   <Avatar name={user?.name ?? 'Guest'} url={user?.avatarUrl} size={28} />
-                  <span className="min-w-0 truncate">View profile</span>
+                  <span className="min-w-0 truncate">Profile</span>
+                </Link>
+                <Link
+                  to="/tickets"
+                  className="flex items-center gap-3 px-4 py-2.5 text-body font-semibold text-textprimary transition-colors duration-200 hover:bg-primary-6"
+                >
+                  <Ticket size={20} className="shrink-0 text-textmuted" />
+                  <span className="min-w-0 truncate">My tickets</span>
+                </Link>
+                <Link
+                  to="/saved"
+                  className="flex items-center gap-3 px-4 py-2.5 text-body font-semibold text-textprimary transition-colors duration-200 hover:bg-primary-6"
+                >
+                  <Bookmark size={20} className="shrink-0 text-textmuted" />
+                  <span className="min-w-0 truncate">Saved</span>
                 </Link>
                 <Link
                   to="/settings"

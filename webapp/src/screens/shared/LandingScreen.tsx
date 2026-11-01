@@ -1,14 +1,18 @@
 /**
  * Public discovery landing (`/`, and the legacy `/landing` URL).
  *
- * The first screen a logged-out visitor sees: a hero, the four categories,
- * a live preview of published events, and a hosting pitch. "Log in" stays a
- * <button> (not a link) so the navigation test's contract holds.
+ * The first screen a logged-out visitor sees (section 5.1):
+ *  - Hero with headline, search, and category pills over cobalt->deepViolet gradient;
+ *  - "Happening this week" row;
+ *  - Featured events carousel/grid;
+ *  - Browse by category tiles;
+ *  - "Why EventHub" row showcasing differentiators (group chats, MoMo, plus-ones, QR);
+ *  - "Host your event" banner linking to signup.
  *
- * The footer and top nav come from the AppShell — this is normal page
- * content, not a full-bleed splash.
+ * "Log in" stays a <button> (not a link) so the navigation test's contract holds.
+ * The footer and top nav come from AppShell.
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Add,
@@ -16,36 +20,24 @@ import {
   Calendar1,
   Heart,
   Location,
+  Message,
   Money,
+  People,
+  Scan,
   SearchNormal,
   Star,
   Ticket,
   UserAdd,
+  Wallet1,
 } from 'iconsax-react';
 import { Button, EventGridTile, Skeleton } from '../../components/ui';
+import { useAuth } from '../../app/AuthProvider';
 import { useSavedEvents } from '../../hooks/useSavedEvents';
 import { useLive } from '../../db/live';
 import { EventService } from '../../services';
 import { CATEGORY_META } from '../../layouts/nav/navConfig';
 import { CATEGORIES } from '../../lib/constants';
 import type { Event } from '../../models';
-
-function BrandMark({ size = 48 }: { size?: number }) {
-  return (
-    <span
-      className="flex shrink-0 items-center justify-center rounded-md font-extrabold text-white"
-      style={{
-        width: size,
-        height: size,
-        fontSize: Math.round(size * 0.4),
-        backgroundImage: 'linear-gradient(135deg, var(--eh-primary) 0%, var(--eh-deep-violet) 100%)',
-      }}
-      aria-hidden="true"
-    >
-      EH
-    </span>
-  );
-}
 
 const QUICK_LINKS = [
   { to: '/explore?date=weekend', label: 'This weekend', icon: Calendar1 },
@@ -56,21 +48,64 @@ const QUICK_LINKS = [
   { to: '/explore?near=1', label: 'Near me', icon: Location },
 ];
 
+const DIFFERENTIATORS = [
+  {
+    icon: Message,
+    title: 'Per-event group chats',
+    description: 'Coordinate with organizers and fellow attendees directly in built-in event group chats.',
+  },
+  {
+    icon: Wallet1,
+    title: 'MoMo-first payments',
+    description: 'Frictionless Mobile Money checkout across MTN, Telecel, and AT with instant tickets.',
+  },
+  {
+    icon: People,
+    title: 'Plus-ones & guest lists',
+    description: 'Manage invited guests, tracked plus-ones, and send bulk SMS invitations with RSVP links.',
+  },
+  {
+    icon: Scan,
+    title: 'QR & seat check-in',
+    description: 'Rapid camera ticket scanning and real-time door check-in numbers on event day.',
+  },
+];
+
 export default function LandingScreen() {
+  const { uid } = useAuth();
   const navigate = useNavigate();
   const { isSaved, toggleSave } = useSavedEvents();
   const [term, setTerm] = useState('');
   const eventService = useMemo(() => new EventService(), []);
 
+  // Redirect signed-in users hitting / or /landing to /home (section 5.1)
+  useEffect(() => {
+    if (uid) {
+      navigate('/home', { replace: true });
+    }
+  }, [uid, navigate]);
+
   const { data: events } = useLive<Event[]>(() => eventService.publishedEventsFeed(), []);
 
-  const preview = useMemo(() => {
+  const sortedEvents = useMemo(() => {
     const rows = [...(events ?? [])].sort((a, b) => b.date.getTime() - a.date.getTime());
-    return rows.slice(0, 8);
+    return rows;
   }, [events]);
 
-  const featured = useMemo(() => preview.filter((ev) => ev.isCurrentlyFeatured).slice(0, 4), [preview]);
-  const showcase = featured.length > 0 ? featured : preview.slice(0, 4);
+  const featured = useMemo(
+    () => sortedEvents.filter((ev) => ev.isCurrentlyFeatured).slice(0, 4),
+    [sortedEvents],
+  );
+
+  const thisWeekEvents = useMemo(() => {
+    const now = Date.now();
+    const sevenDays = now + 7 * 86_400_000;
+    return sortedEvents
+      .filter((ev) => ev.date.getTime() >= now && ev.date.getTime() <= sevenDays)
+      .slice(0, 4);
+  }, [sortedEvents]);
+
+  const showcase = featured.length > 0 ? featured : sortedEvents.slice(0, 4);
 
   function submitSearch(event: React.FormEvent) {
     event.preventDefault();
@@ -79,25 +114,28 @@ export default function LandingScreen() {
   }
 
   return (
-    <div className="animate-fadeup">
-      {/* ---- Hero --------------------------------------------------------- */}
-      <section className="-mx-4 -mt-4 px-4 pb-10 pt-10 tablet:-mx-6 tablet:px-6 tablet:pt-14 wide:px-8">
-        <div className="mx-auto max-w-[720px] text-center">
-          <div className="flex justify-center">
-            <BrandMark size={64} />
-          </div>
-          <h1 className="mt-5 text-display tracking-tight text-textprimary tablet:text-[34px]">
+    <div className="animate-fadeup space-y-12">
+      {/* ---- Hero (cobalt -> deepViolet treatment) ------------------------- */}
+      <section className="-mx-4 -mt-4 overflow-hidden rounded-[24px] p-6 text-white shadow-popover tablet:-mx-6 tablet:p-10 wide:px-12"
+        style={{
+          backgroundImage: 'linear-gradient(135deg, var(--eh-primary) 0%, var(--eh-deep-violet) 100%)',
+        }}
+      >
+        <div className="mx-auto max-w-[760px] text-center">
+          <span className="inline-block rounded-pill bg-white/15 px-3.5 py-1 text-caption font-bold tracking-wider uppercase text-white/90 backdrop-blur">
+            Made for Ghana
+          </span>
+          <h1 className="mt-4 text-display font-extrabold tracking-tight text-white tablet:text-[38px] tablet:leading-tight">
             Book, connect and celebrate together
           </h1>
-          <p className="mx-auto mt-3 max-w-[560px] text-body text-textmuted">
-            Weddings, funerals, corporate and social events — find something near you, or host
-            your own in minutes.
+          <p className="mx-auto mt-3 max-w-[580px] text-body text-white/85 tablet:text-[16px]">
+            From weddings and memorials to corporate workshops and parties — discover gatherings across Ghana or host your own.
           </p>
 
           <form
             role="search"
             onSubmit={submitSearch}
-            className="relative mx-auto mt-6 flex max-w-[520px] items-center"
+            className="relative mx-auto mt-8 flex max-w-[560px] items-center"
           >
             <SearchNormal size={20} className="pointer-events-none absolute left-4 text-textmuted" />
             <input
@@ -116,19 +154,39 @@ export default function LandingScreen() {
             </button>
           </form>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+          {/* Category pills under the search bar */}
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            {CATEGORIES.map((category) => {
+              const meta = CATEGORY_META[category];
+              return (
+                <Link
+                  key={category}
+                  to={`/explore?category=${category}`}
+                  className="rounded-pill border border-white/25 bg-white/15 px-3.5 py-1 text-[13px] font-semibold text-white backdrop-blur transition-colors duration-200 hover:bg-white/25"
+                >
+                  {meta.label}
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button size="lg" icon={<UserAdd size={18} />} onClick={() => navigate('/signup')}>
               Get started
             </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate('/login')}>
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className="inline-flex h-12 items-center justify-center rounded-base border border-white/40 bg-white/10 px-6 text-button font-bold text-white backdrop-blur transition-colors duration-200 hover:bg-white/20"
+            >
               Log in
-            </Button>
+            </button>
           </div>
         </div>
       </section>
 
       {/* ---- Quick links --------------------------------------------------- */}
-      <section aria-label="Quick links" className="pb-8">
+      <section aria-label="Quick links" className="-my-4">
         <div className="no-scrollbar -mx-4 flex items-center gap-2 overflow-x-auto px-4 tablet:-mx-6 tablet:px-6 wide:px-8">
           {QUICK_LINKS.map(({ to, label, icon: Icon }) => (
             <Link
@@ -143,54 +201,50 @@ export default function LandingScreen() {
         </div>
       </section>
 
-      {/* ---- Categories ---------------------------------------------------- */}
-      <section aria-label="Browse by category" className="pb-10">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <h2 className="min-w-0 truncate text-title text-textprimary">Browse by category</h2>
-          <Link
-            to="/explore"
-            className="inline-flex shrink-0 items-center gap-1 text-button text-primary transition-opacity duration-200 hover:opacity-80"
-          >
-            See all
-            <ArrowRight2 size={14} />
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 gap-3 tablet:grid-cols-4">
-          {CATEGORIES.map((category) => {
-            const meta = CATEGORY_META[category];
-            const Icon = meta.icon;
-            return (
-              <Link
-                key={category}
-                to={`/explore?category=${category}`}
-                className="flex min-w-0 flex-col rounded-[20px] border border-border bg-surface p-4 shadow-card transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-popover"
-              >
-                <span className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-xl bg-primary-6 text-primary">
-                  <Icon size={24} />
-                </span>
-                <span className="mt-3 block min-w-0 truncate text-subtitle text-textprimary">
-                  {meta.label}
-                </span>
-                <span className="mt-1 block min-w-0 line-clamp-2 text-caption text-textmuted">
-                  {meta.description}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+      {/* ---- Happening this week (section 5.1) ------------------------------ */}
+      {thisWeekEvents.length > 0 && (
+        <section aria-label="Happening this week">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="min-w-0 truncate text-title text-textprimary">Happening this week</h2>
+              <p className="text-caption text-textmuted">Upcoming events happening over the next 7 days</p>
+            </div>
+            <Link
+              to="/explore?date=weekend"
+              className="inline-flex shrink-0 items-center gap-1 text-button text-primary transition-opacity duration-200 hover:opacity-80"
+            >
+              See more
+              <ArrowRight2 size={14} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3 tablet:grid-cols-3 wide:grid-cols-4">
+            {thisWeekEvents.map((ev) => (
+              <EventGridTile
+                key={ev.id}
+                ev={ev}
+                saved={isSaved(ev.id)}
+                onSave={() => toggleSave(ev.id)}
+                href={`/event/${ev.id}`}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
-      {/* ---- Live event preview -------------------------------------------- */}
-      <section aria-label="Events on EventHub" className="pb-10">
+      {/* ---- Featured / Newest events carousel ----------------------------- */}
+      <section aria-label="Events on EventHub">
         <div className="mb-3 flex items-center justify-between gap-3">
-          <h2 className="min-w-0 truncate text-title text-textprimary">
-            {featured.length > 0 ? 'Featured events' : 'Newest events'}
-          </h2>
+          <div>
+            <h2 className="min-w-0 truncate text-title text-textprimary">
+              {featured.length > 0 ? 'Featured events' : 'Newest events'}
+            </h2>
+            <p className="text-caption text-textmuted">Handpicked and trending events across Ghana</p>
+          </div>
           <Link
             to="/explore"
             className="inline-flex shrink-0 items-center gap-1 text-button text-primary transition-opacity duration-200 hover:opacity-80"
           >
-            Explore
+            Explore all
             <ArrowRight2 size={14} />
           </Link>
         </div>
@@ -225,15 +279,83 @@ export default function LandingScreen() {
         )}
       </section>
 
+      {/* ---- Browse by category -------------------------------------------- */}
+      <section aria-label="Browse by category">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="min-w-0 truncate text-title text-textprimary">Browse by category</h2>
+            <p className="text-caption text-textmuted">Events tailored for each celebration and milestone</p>
+          </div>
+          <Link
+            to="/explore"
+            className="inline-flex shrink-0 items-center gap-1 text-button text-primary transition-opacity duration-200 hover:opacity-80"
+          >
+            See all
+            <ArrowRight2 size={14} />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 gap-3 tablet:grid-cols-4">
+          {CATEGORIES.map((category) => {
+            const meta = CATEGORY_META[category];
+            const Icon = meta.icon;
+            return (
+              <Link
+                key={category}
+                to={`/explore?category=${category}`}
+                className="flex min-w-0 flex-col rounded-[20px] border border-border bg-surface p-4 shadow-card transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-popover"
+              >
+                <span className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-xl bg-primary-6 text-primary">
+                  <Icon size={24} />
+                </span>
+                <span className="mt-3 block min-w-0 truncate text-subtitle text-textprimary">
+                  {meta.label}
+                </span>
+                <span className="mt-1 block min-w-0 line-clamp-2 text-caption text-textmuted">
+                  {meta.description}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ---- Why EventHub (Differentiators - section 5.1 & section 2) ------- */}
+      <section aria-label="Why EventHub">
+        <div className="mb-4">
+          <h2 className="text-title font-extrabold text-textprimary">Why EventHub?</h2>
+          <p className="mt-1 text-body text-textmuted">
+            Built specifically for Ghanaian events with modern tools Eventbrite doesn&apos;t offer.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-4 tablet:grid-cols-2 desktop:grid-cols-4">
+          {DIFFERENTIATORS.map((diff) => {
+            const Icon = diff.icon;
+            return (
+              <div
+                key={diff.title}
+                className="flex min-w-0 flex-col rounded-[20px] border border-border bg-surface p-5 shadow-card"
+              >
+                <span className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-xl bg-primary-6 text-primary">
+                  <Icon size={24} />
+                </span>
+                <h3 className="mt-3 text-subtitle font-bold text-textprimary">{diff.title}</h3>
+                <p className="mt-1 text-caption leading-relaxed text-textmuted">{diff.description}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       {/* ---- Hosting pitch -------------------------------------------------- */}
       <section aria-label="Host on EventHub" className="pb-4">
-        <div className="flex flex-col gap-4 rounded-[20px] p-6 text-white shadow-popover tablet:flex-row tablet:items-center tablet:justify-between"
+        <div
+          className="flex flex-col gap-4 rounded-[20px] p-6 text-white shadow-popover tablet:flex-row tablet:items-center tablet:justify-between"
           style={{ backgroundImage: 'var(--eh-tile-gradient)' }}
         >
           <div className="min-w-0">
             <h2 className="min-w-0 truncate text-title font-extrabold">Hosting an event?</h2>
             <p className="mt-1 min-w-0 text-body text-white/85">
-              Sell tickets, send SMS invitations and check guests in at the door.
+              Sell tickets with MoMo, send SMS invitations and check guests in at the door with just 2% platform fee.
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-2">
