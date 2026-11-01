@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   ROUTE_META,
+  backdropFor,
   breadcrumbs,
   documentTitle,
   isPublicRoute,
@@ -72,6 +73,24 @@ describe('route lookup', () => {
     expect(layoutFor('/home')).toBe('default');
     expect(layoutFor('/event/evt-1/pay/bk-1')).toBe('focused');
     expect(layoutFor('/chats/chat-1')).toBe('bare');
+  });
+
+  it('resolves backdrop for every route', () => {
+    for (const meta of ROUTE_META) {
+      const backdrop = backdropFor(meta.pattern);
+      expect(['rich', 'soft', 'none'], meta.pattern).toContain(backdrop);
+    }
+    expect(backdropFor('/')).toBe('rich');
+    expect(backdropFor('/home')).toBe('rich');
+    expect(backdropFor('/explore')).toBe('rich');
+    expect(backdropFor('/tickets')).toBe('rich');
+    expect(backdropFor('/host')).toBe('rich');
+    expect(backdropFor('/community')).toBe('rich');
+    expect(backdropFor('/help')).toBe('rich');
+    expect(backdropFor('/settings')).toBe('soft');
+    expect(backdropFor('/admin')).toBe('soft');
+    expect(backdropFor('/login')).toBe('none');
+    expect(backdropFor('/chats/chat-1')).toBe('none');
   });
 });
 

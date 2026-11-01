@@ -61,7 +61,7 @@ export function Footer({ uid }: { uid: string | null }) {
         </div>
 
         <div className="mt-10 flex flex-col gap-2 border-t border-white/10 pt-6 text-caption text-white/60 tablet:flex-row tablet:items-center tablet:justify-between">
-          <p>© {year} EventHub. All rights reserved.</p>
+          <p>© {year} EventHub · v{__APP_VERSION__} ({__COMMIT_HASH__}) · {__BUILD_DATE__}</p>
           <p>Made for Ghana · Prices in GHS · Pay with MoMo or card</p>
         </div>
       </div>

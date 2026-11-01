@@ -37,6 +37,7 @@ import { useLive } from '../../db/live';
 import { EventService } from '../../services';
 import { CATEGORY_META } from '../../layouts/nav/navConfig';
 import { CATEGORIES } from '../../lib/constants';
+import { BACKGROUND_CONFIG } from '../../theme/backgrounds';
 import type { Event } from '../../models';
 
 const QUICK_LINKS = [
@@ -115,13 +116,27 @@ export default function LandingScreen() {
 
   return (
     <div className="animate-fadeup space-y-12">
-      {/* ---- Hero (cobalt -> deepViolet treatment) ------------------------- */}
-      <section className="-mx-4 -mt-4 overflow-hidden rounded-[24px] p-6 text-white shadow-popover tablet:-mx-6 tablet:p-10 wide:px-12"
-        style={{
-          backgroundImage: 'linear-gradient(135deg, var(--eh-primary) 0%, var(--eh-deep-violet) 100%)',
-        }}
-      >
-        <div className="mx-auto max-w-[760px] text-center">
+      {/* ---- Hero (auth photo under cobalt -> deepViolet gradient) --------- */}
+      <section className="relative -mx-4 -mt-4 overflow-hidden rounded-[24px] p-6 text-white shadow-popover tablet:-mx-6 tablet:p-10 wide:px-12">
+        <picture className="pointer-events-none absolute inset-0 -z-10 block h-full w-full select-none">
+          <source type="image/webp" srcSet={BACKGROUND_CONFIG.auth.srcSet} sizes="100vw" />
+          <img
+            src={BACKGROUND_CONFIG.auth.src}
+            alt=""
+            aria-hidden="true"
+            className="h-full w-full object-cover object-center"
+          />
+        </picture>
+        <div
+          className="pointer-events-none absolute inset-0 -z-10"
+          style={{
+            backgroundImage:
+              'linear-gradient(135deg, rgba(43, 95, 255, 0.88) 0%, rgba(95, 59, 126, 0.94) 100%)',
+          }}
+          aria-hidden="true"
+        />
+
+        <div className="relative z-10 mx-auto max-w-[760px] text-center">
           <span className="inline-block rounded-pill bg-white/15 px-3.5 py-1 text-caption font-bold tracking-wider uppercase text-white/90 backdrop-blur">
             Made for Ghana
           </span>
@@ -302,7 +317,7 @@ export default function LandingScreen() {
               <Link
                 key={category}
                 to={`/explore?category=${category}`}
-                className="flex min-w-0 flex-col rounded-[20px] border border-border bg-surface p-4 shadow-card transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-popover"
+                className="flex min-w-0 flex-col rounded-[20px] border border-border bg-surface p-4 shadow-card transition-colors duration-200 hover:border-primary-14 hover:shadow-popover"
               >
                 <span className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-xl bg-primary-6 text-primary">
                   <Icon size={24} />

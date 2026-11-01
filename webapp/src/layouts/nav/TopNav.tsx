@@ -3,12 +3,29 @@
  * replaces the old left navigation (section 3.2). 72px sticky, active item carries a
  * 2px primary underline, submenus open as mega/list panels.
  *
- * The account button's caption is what carries the merged-role signal: a plain
- * date line ("Joined Mar 2024") for users, the exact word "Admin" for admins.
+ * Header layout:
+ *   - Logo (shrink-0)
+ *   - Nav (flex-1 min-w-0 justify-center, menus centred in free space)
+ *   - Right cluster (shrink-0)
+ *   - Shared page-container with --eh-gutter (identical x-alignment with <main>)
+ *   - Search: inline 260px at ≥1536, 200px at wide–1535, icon button + overlay below wide
+ *   - Create event: Bold 18px Add icon, shrinks to 40×40 icon-only below 1180px
+ *   - Account: 36px avatar-only with primary ring when open
+ *   - Help: hover+click menu managed by centralized useHoverIntent
  */
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Add, Bookmark, Logout, Message, MessageQuestion, Setting2, ShieldTick, Ticket } from 'iconsax-react';
+import {
+  Add,
+  Bookmark,
+  Logout,
+  Message,
+  MessageQuestion,
+  SearchNormal,
+  Setting2,
+  ShieldTick,
+  Ticket,
+} from 'iconsax-react';
 import { effectiveRole, useAuth } from '../../app/AuthProvider';
 import { Avatar } from '../../components/ui';
 import { useChats, useChatMeta } from '../../components/SocialData';
@@ -16,8 +33,10 @@ import { navGroupFor } from '../../routes/routeMeta';
 import { NavMenu } from './NavMenu';
 import { NavSearch } from './NavSearch';
 import { NotificationBell } from './NotificationBell';
-import { DropdownPanel, useDismissOnOutside, useEscape } from './Dropdown';
-import { HELP_MENU_ITEMS, NAV_MENUS, LOGGED_OUT_MENUS, type NavEntry } from './navConfig';
+import { ListDropdown } from './ListDropdown';
+import { SearchOverlay } from './SearchOverlay';
+import { useHoverIntent } from './useHoverIntent';
+import { HELP_MENU_ITEMS, NAV_MENUS, LOGGED_OUT_MENUS } from './navConfig';
 
 function BrandMark({ size = 34 }: { size?: number }) {
   return (
@@ -37,93 +56,6 @@ function BrandMark({ size = 34 }: { size?: number }) {
   );
 }
 
-function ListDropdown({
-  label,
-  icon,
-  items,
-  align = 'right',
-  widthClass = 'w-[320px]',
-  children,
-  triggerContent,
-  triggerClassName,
-}: {
-  label: string;
-  icon?: React.ReactNode;
-  align?: 'left' | 'right';
-  widthClass?: string;
-  items?: NavEntry[];
-  children?: React.ReactNode;
-  /** Replaces the default icon+label trigger body (e.g. the avatar block). */
-  triggerContent?: React.ReactNode;
-  triggerClassName?: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const panelId = `${label}-menu`;
-  const triggerId = `${label}-trigger`;
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-  const close = () => setOpen(false);
-
-  useDismissOnOutside(open, [triggerRef, panelRef], close);
-  useEscape(open, close);
-
-  return (
-    <div className="relative">
-      <button
-        ref={triggerRef}
-        type="button"
-        id={triggerId}
-        aria-haspopup="true"
-        aria-expanded={open}
-        aria-controls={open ? panelId : undefined}
-        aria-label={label}
-        onClick={() => setOpen((v) => !v)}
-        className={
-          triggerClassName ??
-          'flex h-[72px] items-center gap-1.5 px-3 text-body font-semibold text-textmuted transition-colors duration-200 hover:text-textprimary'
-        }
-      >
-        {triggerContent ?? (
-          <>
-            {icon}
-            {label}
-          </>
-        )}
-      </button>
-      {open && (
-        <div ref={panelRef}>
-          <DropdownPanel id={panelId} labelledBy={triggerId} align={align} widthClass={widthClass}>
-            {/* Any click inside (link or button) closes the panel. */}
-            <div onClick={() => setOpen(false)} role="presentation">
-              {children}
-              {items?.map((entry) => {
-                const Icon = entry.icon;
-                return (
-                  <Link
-                    key={entry.id}
-                    to={entry.to ?? '/help'}
-                    className="flex items-center gap-3 px-4 py-2.5 transition-colors duration-200 hover:bg-primary-6"
-                  >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary-6 text-primary">
-                      <Icon size={18} />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-body font-bold text-textprimary">{entry.label}</span>
-                      {entry.description && (
-                        <span className="block truncate text-caption text-textmuted">{entry.description}</span>
-                      )}
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
-          </DropdownPanel>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export interface TopNavProps {
   /** Event-scoped nav entries hand their template here (opens the event picker). */
   onEventTool?: (template: string) => void;
@@ -134,11 +66,24 @@ export function TopNav({ onEventTool }: TopNavProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const activeGroup = navGroupFor(location.pathname);
-  const [openMenu, setOpenMenu] = useState<string | null>(null);
   const role = effectiveRole(user);
+  const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
+
+  const hoverIntent = useHoverIntent();
+  const {
+    openMenu,
+    isPinned,
+    onPointerEnterItem,
+    onPointerLeaveItem,
+    onPointerLeaveNav,
+    onPointerEnterPanel,
+    onTriggerClick,
+    onOpenChange,
+    closeAll,
+  } = hoverIntent;
 
   // Close any open submenu on navigation.
-  useEffect(() => setOpenMenu(null), [location.pathname, location.search]);
+  useEffect(() => closeAll(), [location.pathname, location.search, closeAll]);
 
   const { data: chats } = useChats(uid);
   const chatMeta = useChatMeta(chats, uid);
@@ -159,13 +104,23 @@ export function TopNav({ onEventTool }: TopNavProps) {
 
   return (
     <header className="sticky top-0 z-40 hidden h-[72px] shrink-0 border-b border-border bg-surface/95 backdrop-blur desktop:block">
-      <div className="mx-auto flex h-full w-full max-w-[1280px] items-center gap-1 px-6 wide:px-8">
-        <Link to={user ? '/home' : '/'} className="mr-2 flex shrink-0 items-center gap-2.5">
+      <div className="page-container flex h-full items-center gap-8">
+        {/* Left: Brand / Logo */}
+        <Link to={user ? '/home' : '/'} className="flex shrink-0 items-center gap-2.5">
           <BrandMark />
           <span className="text-title font-extrabold tracking-tight text-textprimary">EventHub</span>
         </Link>
 
-        <nav className="flex min-w-0 items-center" aria-label="Primary">
+        {/* Center: Primary Navigation (centered in available space) */}
+        <nav
+          className="flex flex-1 min-w-0 items-center justify-center gap-1"
+          aria-label="Primary"
+          onPointerLeave={(e) => {
+            if (e.pointerType !== 'touch') {
+              onPointerLeaveNav(e.pointerType);
+            }
+          }}
+        >
           {menus.map((menu) =>
             menu.adminOnly && role !== 'admin' ? null : (
               <NavMenu
@@ -174,37 +129,68 @@ export function TopNav({ onEventTool }: TopNavProps) {
                 active={activeGroup === menu.id}
                 uid={uid}
                 open={openMenu === menu.id}
-                onOpenChange={(next) => setOpenMenu(next ? menu.id : null)}
+                isPinned={isPinned(menu.id)}
+                onOpenChange={(next) => onOpenChange(menu.id, next)}
+                onTriggerClick={onTriggerClick}
+                onPointerEnterItem={onPointerEnterItem}
+                onPointerLeaveItem={onPointerLeaveItem}
+                onPointerEnterPanel={onPointerEnterPanel}
                 onEventTool={openEventTool}
               />
             ),
           )}
 
           <ListDropdown
+            id="help"
             label="Help"
             icon={<MessageQuestion size={18} />}
             items={HELP_MENU_ITEMS}
             widthClass="w-[340px]"
+            hoverable={true}
+            open={openMenu === 'help'}
+            onOpenChange={(next) => onOpenChange('help', next)}
+            onTriggerClick={onTriggerClick}
+            onPointerEnterItem={onPointerEnterItem}
+            onPointerLeaveItem={onPointerLeaveItem}
+            onPointerEnterPanel={onPointerEnterPanel}
           />
         </nav>
 
-        <div className="ml-auto flex items-center gap-2">
+        {/* Right cluster (order: search · Create event · Chats · bell · account) */}
+        <div className="flex shrink-0 items-center gap-2">
+          {/* Below wide: search icon button that opens SearchOverlay */}
+          <button
+            type="button"
+            aria-label="Search events"
+            title="Search events"
+            onClick={() => setSearchOverlayOpen(true)}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-textprimary transition-colors duration-200 hover:bg-primary-6 wide:hidden"
+          >
+            <SearchNormal size={20} />
+          </button>
+
+          {/* Wide and above: inline search box */}
           <NavSearch className="hidden items-center wide:flex" />
 
           {user ? (
             <>
+              {/* Create event: full pill with text at ≥1180px; 40x40 icon-only below 1180px */}
               <Link
                 to="/organizer/events/new"
-                className="inline-flex h-10 items-center gap-2 rounded-base bg-primary px-4 text-button text-white transition-[filter] duration-200 hover:brightness-95"
+                aria-label="Create event"
+                title="Create event"
+                className="inline-flex h-10 shrink-0 items-center justify-center rounded-base bg-primary text-button leading-none text-white transition-[filter] duration-200 hover:brightness-95 w-10 px-0 compactCreate:w-auto compactCreate:px-5 compactCreate:gap-2"
               >
-                <Add size={18} />
-                Create event
+                <Add size={18} variant="Bold" className="shrink-0" />
+                <span className="hidden whitespace-nowrap compactCreate:inline">Create event</span>
               </Link>
+
+              {/* Chats */}
               <Link
                 to="/chats"
                 aria-label="Chats"
                 title="Chats"
-                className="relative flex h-10 w-10 items-center justify-center rounded-full text-textprimary transition-colors duration-200 hover:bg-primary-6"
+                className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-textprimary transition-colors duration-200 hover:bg-primary-6"
               >
                 <Message size={22} />
                 {hasUnreadChats && (
@@ -214,26 +200,28 @@ export function TopNav({ onEventTool }: TopNavProps) {
                   />
                 )}
               </Link>
+
+              {/* Notifications */}
               <NotificationBell />
+
+              {/* Account dropdown (avatar only trigger, 36px) */}
               <ListDropdown
+                id="account"
                 label="Account"
                 align="right"
                 widthClass="w-[280px]"
-                triggerClassName="flex h-[72px] items-center gap-2.5 rounded-base px-2.5 transition-colors duration-200 hover:bg-primary-6"
+                hoverable={false}
+                triggerClassName="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-200 hover:bg-primary-6"
                 triggerContent={
                   <>
-                    <Avatar name={user?.name ?? 'Guest'} url={user?.avatarUrl} size={34} />
-                    <span className="hidden min-w-0 max-w-[150px] text-left wide:block">
-                      <span className="block truncate text-body font-bold text-textprimary">
-                        {user?.name ?? 'Guest'}
-                      </span>
-                      {role === 'admin' ? (
-                        <span className="block truncate text-caption text-textmuted">Admin</span>
-                      ) : (
-                        joinedLabel !== '' && (
-                          <span className="block truncate text-caption text-textmuted">{joinedLabel}</span>
-                        )
-                      )}
+                    <Avatar
+                      name={user?.name ?? 'Guest'}
+                      url={user?.avatarUrl}
+                      size={36}
+                      className="transition-all duration-200"
+                    />
+                    <span className="sr-only">
+                      {role === 'admin' ? 'Admin' : joinedLabel}
                     </span>
                   </>
                 }
@@ -317,6 +305,9 @@ export function TopNav({ onEventTool }: TopNavProps) {
           )}
         </div>
       </div>
+
+      {/* Full-screen search overlay */}
+      <SearchOverlay open={searchOverlayOpen} onClose={() => setSearchOverlayOpen(false)} />
     </header>
   );
 }

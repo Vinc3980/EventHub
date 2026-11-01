@@ -21,6 +21,9 @@ export type NavGroupId =
 /** `default` = top nav + footer, `focused` = checkout-style minimal chrome, `bare` = full-height. */
 export type LayoutKind = 'default' | 'focused' | 'bare';
 
+/** Backdrop style for the route: rich photo, heavily blurred soft tint, or none */
+export type BackdropKind = 'rich' | 'soft' | 'none';
+
 export interface RouteMeta {
   /** Matches the React Router `path` used in App.tsx (`:param` segments match anything). */
   pattern: string;
@@ -34,17 +37,19 @@ export interface RouteMeta {
   layout?: LayoutKind;
   /** AppShell renders the shared PageHeader (crumbs + H1 + actions) for this route. */
   header?: boolean;
+  /** Photographic backdrop variant */
+  backdrop?: BackdropKind;
 }
 
 export const ROOT_PATTERN = '/';
 
 export const ROUTE_META: readonly RouteMeta[] = [
   // ---- public site -------------------------------------------------------
-  { pattern: '/', title: 'EventHub', navGroup: 'explore', public: true, layout: 'default' },
-  { pattern: '/landing', title: 'EventHub', parent: '/', public: true, layout: 'default' },
-  { pattern: '/login', title: 'Log in', public: true, layout: 'focused' },
-  { pattern: '/signup', title: 'Create account', public: true, layout: 'focused' },
-  { pattern: '/help', title: 'Help', parent: '/', navGroup: 'help', public: true, layout: 'default', header: true },
+  { pattern: '/', title: 'EventHub', navGroup: 'explore', public: true, layout: 'default', backdrop: 'rich' },
+  { pattern: '/landing', title: 'EventHub', parent: '/', public: true, layout: 'default', backdrop: 'rich' },
+  { pattern: '/login', title: 'Log in', public: true, layout: 'focused', backdrop: 'none' },
+  { pattern: '/signup', title: 'Create account', public: true, layout: 'focused', backdrop: 'none' },
+  { pattern: '/help', title: 'Help', parent: '/', navGroup: 'help', public: true, layout: 'default', header: true, backdrop: 'rich' },
   {
     pattern: '/help/:slug',
     title: 'Help article',
@@ -61,6 +66,7 @@ export const ROUTE_META: readonly RouteMeta[] = [
     public: true,
     layout: 'default',
     header: true,
+    backdrop: 'rich',
   },
   {
     pattern: '/event/:eventId',
@@ -96,7 +102,7 @@ export const ROUTE_META: readonly RouteMeta[] = [
   },
 
   // ---- daily destinations (default chrome) -------------------------------
-  { pattern: '/home', title: 'Home', navGroup: 'home', layout: 'default' },
+  { pattern: '/home', title: 'Home', navGroup: 'home', layout: 'default', backdrop: 'rich' },
   { pattern: '/chats', title: 'Chats', parent: '/community', navGroup: 'community', layout: 'default', header: true },
   {
     pattern: '/chats/:chatId',
@@ -116,7 +122,7 @@ export const ROUTE_META: readonly RouteMeta[] = [
   },
 
   // ---- tickets module ----------------------------------------------------
-  { pattern: '/tickets', title: 'Tickets', parent: '/', navGroup: 'tickets', layout: 'default', header: true },
+  { pattern: '/tickets', title: 'Tickets', parent: '/', navGroup: 'tickets', layout: 'default', header: true, backdrop: 'rich' },
   {
     pattern: '/bookings',
     title: 'My bookings',
@@ -166,7 +172,7 @@ export const ROUTE_META: readonly RouteMeta[] = [
   },
 
   // ---- host module -------------------------------------------------------
-  { pattern: '/host', title: 'Host', parent: '/', navGroup: 'host', layout: 'default', header: true },
+  { pattern: '/host', title: 'Host', parent: '/', navGroup: 'host', layout: 'default', header: true, backdrop: 'rich' },
   { pattern: '/organizer', title: 'Host', parent: '/host', navGroup: 'host', layout: 'default' },
   {
     pattern: '/organizer/events',
@@ -263,6 +269,7 @@ export const ROUTE_META: readonly RouteMeta[] = [
     navGroup: 'community',
     layout: 'default',
     header: true,
+    backdrop: 'rich',
   },
   { pattern: '/settings', title: 'Settings', parent: '/', navGroup: 'none', layout: 'default', header: true },
   {
@@ -395,6 +402,14 @@ export function isPublicRoute(pathname: string): boolean {
 
 export function layoutFor(pathname: string): LayoutKind {
   return routeMeta(pathname).layout ?? 'default';
+}
+
+export function backdropFor(pathname: string): BackdropKind {
+  const meta = routeMeta(pathname);
+  if (meta.backdrop) return meta.backdrop;
+  const layout = meta.layout ?? 'default';
+  if (layout === 'default') return 'soft';
+  return 'none';
 }
 
 export function navGroupFor(pathname: string): NavGroupId {

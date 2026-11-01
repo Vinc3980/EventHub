@@ -37,6 +37,45 @@ body {
   border-radius: 4px;
 }
 
+/* Responsive gutter for the shared page container */
+:root {
+  --eh-gutter: 16px;
+}
+@media (min-width: 768px) {
+  :root {
+    --eh-gutter: 24px;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --eh-gutter: 32px;
+  }
+}
+
+.page-container {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1680px;
+  padding-left: var(--eh-gutter);
+  padding-right: var(--eh-gutter);
+}
+
+/* Rich backdrop overrides: card shadow and bare text */
+[data-backdrop="rich"] {
+  --eh-shadow-card: 0 6px 20px rgba(0, 0, 0, 0.20);
+}
+
+[data-backdrop="rich"] .on-backdrop-title {
+  color: #FFFFFF !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+[data-backdrop="rich"] .on-backdrop-muted {
+  color: rgba(255, 255, 255, 0.85) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
 /* Every flex/text row must truncate rather than overflow (recurring mobile bug) */
 .truncate-row {
   min-width: 0;

@@ -43,7 +43,7 @@ export function NavSearch({ className = 'flex items-center' }: { className?: str
           }
         }}
         className={`h-10 rounded-pill border border-border bg-background pl-11 pr-4 text-body text-textprimary placeholder:text-neutral focus:border-primary focus:outline-none ${
-          focused ? 'w-[320px]' : 'w-[260px]'
+          focused ? 'w-[240px] ultrawide:w-[320px]' : 'w-[200px] ultrawide:w-[260px]'
         } transition-[width,border-color] duration-200`}
       />
     </form>

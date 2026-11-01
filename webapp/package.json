@@ -14,7 +14,8 @@
     "test:coverage": "vitest run --coverage",
     "seed:media": "node scripts/seed-media-manifest.mjs",
     "seed:posters": "node scripts/make-seed-posters.mjs",
-    "seed:video": "node scripts/make-seed-video.mjs"
+    "seed:video": "node scripts/make-seed-video.mjs",
+    "assets:bg": "node scripts/make-bg.mjs"
   },
   "dependencies": {
     "@fontsource/plus-jakarta-sans": "^5.3.0",
@@ -46,6 +47,7 @@
     "globals": "^15.14.0",
     "jsdom": "^25.0.1",
     "postcss": "^8.4.49",
+    "sharp": "^0.35.5",
     "tailwindcss": "^3.4.19",
     "typescript": "~5.6.3",
     "typescript-eslint": "^8.18.1",

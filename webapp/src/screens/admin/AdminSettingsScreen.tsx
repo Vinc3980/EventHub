@@ -100,7 +100,11 @@ export default function AdminSettingsScreen() {
           <OrgRowLink
             icon={<InfoCircle size={18} />}
             title="App version"
-            trailing={<span className="text-body text-textmuted">1.0.0</span>}
+            trailing={
+              <span className="text-body text-textmuted">
+                v{__APP_VERSION__} ({__COMMIT_HASH__}) · {__BUILD_DATE__}
+              </span>
+            }
           />
           <OrgRowLink
             icon={<InfoCircle size={18} />}

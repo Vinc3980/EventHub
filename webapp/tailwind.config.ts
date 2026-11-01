@@ -48,7 +48,7 @@ const config: Config = {
         pill: `${RADIUS.pill}px`,
       },
       boxShadow: {
-        card: SHADOW.card,
+        card: 'var(--eh-shadow-card, 0 4px 16px rgba(43, 95, 255, 0.07))',
         popover: SHADOW.popover,
         dark: SHADOW.dark,
       },
@@ -81,7 +81,10 @@ const config: Config = {
       screens: {
         tablet: '768px',
         desktop: '1024px',
+        nav: '1100px',
+        compactCreate: '1180px',
         wide: '1280px',
+        ultrawide: '1536px',
       },
     },
   },

@@ -174,18 +174,20 @@ export function Segmented<T extends string>({
   onChange,
   className = '',
   ariaLabel,
+  fit = false,
 }: {
   options: { value: T; label: string }[];
   value: T;
   onChange: (v: T) => void;
   className?: string;
   ariaLabel?: string;
+  fit?: boolean;
 }) {
   return (
     <div
       role="tablist"
       aria-label={ariaLabel}
-      className={`no-scrollbar flex w-full gap-1 overflow-x-auto rounded-pill bg-neutralbg p-1 ${className}`}
+      className={`no-scrollbar flex ${fit ? 'inline-flex w-fit' : 'w-full'} gap-1 overflow-x-auto rounded-pill bg-neutralbg p-1 ${className}`}
     >
       {options.map((opt) => {
         const active = opt.value === value;

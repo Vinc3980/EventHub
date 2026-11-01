@@ -12,11 +12,11 @@ import { Suspense, useCallback, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'iconsax-react';
 import { useAuth } from '../app/AuthProvider';
-import { OfflineBanner, Skeleton } from '../components/ui';
+import { OfflineBanner, PageBackdrop, Skeleton } from '../components/ui';
 import { EventPickerSheet } from '../components/EventPickerSheet';
 import { EventToolProvider } from '../components/EventToolContext';
 import { useOnline } from '../hooks/useBreakpoint';
-import { layoutFor, routeMeta } from '../routes/routeMeta';
+import { backdropFor, layoutFor, routeMeta } from '../routes/routeMeta';
 import { Footer } from './Footer';
 import { PageHeader } from './PageHeader';
 import { NavDrawer } from './nav/NavDrawer';
@@ -56,6 +56,7 @@ export function AppShell() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [toolTemplate, setToolTemplate] = useState<string | null>(null);
   const layout = layoutFor(location.pathname);
+  const backdrop = backdropFor(location.pathname);
   const meta = routeMeta(location.pathname);
 
   // Event-scoped nav entries hand over a `/organizer/events/:id/<tool>`
@@ -67,8 +68,11 @@ export function AppShell() {
   // ---- focused / bare: slim back header, no footer, no bottom tabs -------
   if (layout !== 'default') {
     return (
-      <div className={`flex min-h-screen flex-col bg-background ${layout === 'bare' ? 'h-screen' : ''}`}>
-        <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-surface/95 px-3 backdrop-blur">
+      <div
+        className={`flex min-h-screen flex-col bg-background ${layout === 'bare' ? 'h-screen' : ''}`}
+        data-backdrop={backdrop}
+      >
+        <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background-tinted px-3 backdrop-blur">
           <button
             type="button"
             aria-label="Go back"
@@ -99,18 +103,23 @@ export function AppShell() {
   // ---- default: top nav + page header + footer + bottom tabs -------------
   return (
     <EventToolProvider value={{ openEventTool: onEventTool }}>
-      <div className="flex min-h-screen flex-col bg-background">
+      <div className="relative flex min-h-screen flex-col bg-transparent" data-backdrop={backdrop}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-base focus:bg-primary focus:px-4 focus:py-2 focus:font-bold focus:text-white focus:shadow-popover"
+        >
+          Skip to content
+        </a>
+        <PageBackdrop variant="app" mode={backdrop} />
         <TopNav onEventTool={onEventTool} />
         <CompactTopBar onOpenMenu={() => setDrawerOpen(true)} />
         {!online && <OfflineBanner />}
 
-        <main className="min-w-0 flex-1 px-4 pb-24 pt-4 tablet:px-6 tablet:pb-10 wide:px-8">
-          <div className="mx-auto w-full max-w-[1280px] min-w-0">
-            <PageHeader />
-            <Suspense fallback={FALLBACK}>
-              <Outlet />
-            </Suspense>
-          </div>
+        <main id="main-content" className="page-container min-w-0 flex-1 pb-24 pt-4 tablet:pb-10">
+          <PageHeader />
+          <Suspense fallback={FALLBACK}>
+            <Outlet />
+          </Suspense>
         </main>
 
         <Footer uid={uid} />

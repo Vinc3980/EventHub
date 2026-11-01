@@ -39,7 +39,7 @@ export function PageHeader({ actions }: { actions?: ReactNode }) {
         </nav>
       )}
       <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
-        <h1 className="min-w-0 truncate text-display text-textprimary">{meta.title}</h1>
+        <h1 className="min-w-0 truncate text-display text-textprimary on-backdrop-title">{meta.title}</h1>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
       </div>
     </div>
@@ -48,7 +48,7 @@ export function PageHeader({ actions }: { actions?: ReactNode }) {
 
 function CrumbTrail({ crumbs }: { crumbs: { label: string; to?: string }[] }) {
   return (
-    <ol className="flex min-w-0 flex-wrap items-center gap-1 text-caption text-textmuted">
+    <ol className="flex min-w-0 flex-wrap items-center gap-1 text-caption text-textmuted on-backdrop-muted">
       {crumbs.map((crumb, index) => (
         <li key={`${crumb.label}-${index}`} className="flex min-w-0 items-center gap-1">
           {index > 0 && <ArrowRight2 size={12} className="shrink-0 text-neutral" aria-hidden="true" />}

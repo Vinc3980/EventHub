@@ -1,4 +1,4 @@
-const CACHE = 'eventhub-shell-v1';
+const CACHE = 'eventhub-shell-v2';
 // Resolve shell URLs against the registration scope so the worker works both
 // at the domain root and under a project-site base path (/EventHub/).
 const SCOPE = self.registration.scope;

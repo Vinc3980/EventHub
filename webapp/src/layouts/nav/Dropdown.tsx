@@ -75,7 +75,7 @@ export function DropdownPanel({
       role="menu"
       aria-labelledby={labelledBy}
       style={offset === undefined ? undefined : { left: offset }}
-      className={`absolute top-full z-50 mt-2 ${widthClass} max-w-[calc(100vw-32px)] animate-panelin motion-reduce:animate-none ${
+      className={`absolute top-full z-50 pt-2 ${widthClass} max-w-[calc(100vw-32px)] animate-panelin motion-reduce:animate-none ${
         offset === undefined ? (align === 'right' ? 'right-0' : 'left-0') : ''
       }`}
     >

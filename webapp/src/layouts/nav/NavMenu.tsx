@@ -35,6 +35,11 @@ export interface NavMenuProps {
   onOpenChange: (open: boolean) => void;
   /** Event-scoped entries (`eventTo`) hand their template here — TopNav opens the picker. */
   onEventTool: (template: string) => void;
+  isPinned?: boolean;
+  onTriggerClick?: (id: string) => void;
+  onPointerEnterItem?: (id: string, pointerType?: string) => void;
+  onPointerLeaveItem?: (id: string, pointerType?: string) => void;
+  onPointerEnterPanel?: (id: string, pointerType?: string) => void;
 }
 
 function ItemIcon({ icon: Icon }: { icon: NavEntry['icon'] }) {
@@ -45,7 +50,19 @@ function ItemIcon({ icon: Icon }: { icon: NavEntry['icon'] }) {
   );
 }
 
-export function NavMenu({ menu, active, uid, open, onOpenChange, onEventTool }: NavMenuProps) {
+export function NavMenu({
+  menu,
+  active,
+  uid,
+  open,
+  onOpenChange,
+  onEventTool,
+  isPinned = false,
+  onTriggerClick,
+  onPointerEnterItem,
+  onPointerLeaveItem,
+  onPointerEnterPanel,
+}: NavMenuProps) {
   const panelId = useId();
   const labelId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -97,14 +114,44 @@ export function NavMenu({ menu, active, uid, open, onOpenChange, onEventTool }: 
     });
   };
 
-  const scheduleOpen = () => {
-    clearTimers();
-    openTimer.current = setTimeout(() => openPanel('none'), OPEN_DELAY_MS);
+  const handlePointerEnter = (event: React.PointerEvent) => {
+    const pType =
+      (event.nativeEvent as unknown as { pointerType?: string })?.pointerType ||
+      event.pointerType;
+    if (pType === 'touch') return;
+    if (onPointerEnterItem) {
+      onPointerEnterItem(menu.id, pType);
+    } else {
+      clearTimers();
+      openTimer.current = setTimeout(() => openPanel('none'), OPEN_DELAY_MS);
+    }
   };
 
-  const scheduleClose = () => {
-    clearTimers();
-    closeTimer.current = setTimeout(() => onOpenChange(false), CLOSE_DELAY_MS);
+  const handlePointerLeave = (event: React.PointerEvent) => {
+    const pType =
+      (event.nativeEvent as unknown as { pointerType?: string })?.pointerType ||
+      event.pointerType;
+    if (pType === 'touch') return;
+    if (onPointerLeaveItem) {
+      onPointerLeaveItem(menu.id, pType);
+    } else {
+      clearTimers();
+      if (!isPinned) {
+        closeTimer.current = setTimeout(() => onOpenChange(false), CLOSE_DELAY_MS);
+      }
+    }
+  };
+
+  const handleTriggerClick = () => {
+    if (onTriggerClick) {
+      onTriggerClick(menu.id);
+    } else {
+      if (open) {
+        close();
+      } else {
+        openPanel('none');
+      }
+    }
   };
 
   const onTriggerKeyDown = (event: React.KeyboardEvent) => {
@@ -190,12 +237,14 @@ export function NavMenu({ menu, active, uid, open, onOpenChange, onEventTool }: 
   return (
     <div
       className="relative flex items-center"
-      onMouseEnter={scheduleOpen}
-      onMouseLeave={scheduleClose}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
     >
       <Link
         id={labelId}
         to={menu.to}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
         onKeyDown={onTriggerKeyDown}
         onClick={() => onOpenChange(false)}
         className={`flex h-[72px] items-center pl-3 text-body font-semibold transition-colors duration-200 ${
@@ -211,7 +260,9 @@ export function NavMenu({ menu, active, uid, open, onOpenChange, onEventTool }: 
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
         aria-label={`${menu.label} menu`}
-        onClick={() => (open ? close() : openPanel('none'))}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
+        onClick={handleTriggerClick}
         onKeyDown={onTriggerKeyDown}
         className={`flex h-[72px] items-center pl-0.5 pr-3 transition-colors duration-200 ${
           active || open ? 'text-primary' : 'text-textmuted hover:text-textprimary'
@@ -224,7 +275,15 @@ export function NavMenu({ menu, active, uid, open, onOpenChange, onEventTool }: 
       )}
 
       {open && (
-        <div ref={panelRef} onKeyDown={onPanelKeyDown}>
+        <div
+          ref={panelRef}
+          onKeyDown={onPanelKeyDown}
+          onPointerEnter={(e) => {
+            if (e.pointerType !== 'touch' && onPointerEnterPanel) {
+              onPointerEnterPanel(menu.id, e.pointerType);
+            }
+          }}
+        >
           <DropdownPanel id={panelId} labelledBy={labelId} offset={offset} widthClass={mega ? 'w-[640px]' : 'w-[320px]'}>
             <div
               className={

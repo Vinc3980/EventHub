@@ -5,7 +5,7 @@ import { Event, EventTicket, Post, User } from '../models';
 import type { EventCategory, Role } from '../models';
 import { WALLPAPER_IMAGES, WALLPAPER_VIDEOS } from './seedMedia';
 
-export const SEED_VERSION = 'v6';
+export const SEED_VERSION = 'v7';
 
 const SEED_PASSWORD = 'demo123';
 const DAY_MS = 86_400_000;
